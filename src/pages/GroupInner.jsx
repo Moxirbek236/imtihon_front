@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
@@ -111,11 +111,15 @@ export default function GroupInner() {
 
   const [calendarMonthIdx, setCalendarMonthIdx] = useState(null);
   const [schedule, setSchedule] = useState([]);
+  const initialized = useRef(false);
 
   useEffect(() => {
     if (!token()) { navigate('/login'); return; }
-    fetchGroup();
-    fetchSchedule();
+    if (!initialized.current) {
+      initialized.current = true;
+      fetchGroup();
+      fetchSchedule();
+    }
   }, [id]);
 
   async function fetchGroup() {

@@ -23,6 +23,8 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import '../i18n';
 
 const ITEMS_PER_PAGE = 10;
@@ -45,17 +47,20 @@ export default function Students() {
   const [allGroups, setAllGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState('students');
   const [editingId, setEditingId] = useState(null);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groupSearch, setGroupSearch] = useState('');
+  const [sortBy, setSortBy] = useState('id');
+  const [sortOrder, setSortOrder] = useState('asc');
   
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
 
   const filteredGroups = allGroups.filter(g =>
-    g.name.toLowerCase().includes(groupSearch.toLowerCase())
+    g.name?.toLowerCase().includes(groupSearch.toLowerCase())
   );
 
   const toggleGroupSelect = (id) => {
@@ -83,13 +88,48 @@ export default function Students() {
 
   const token = () => localStorage.getItem('token');
 
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setPage(1);
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortBy !== field) return null;
+    return sortOrder === 'asc' 
+      ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />
+      : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />;
+  };
+
+  const thSx = (field) => ({
+    fontWeight: 600,
+    color: 'var(--text-secondary)',
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    userSelect: 'none',
+    '&:hover': { color: 'var(--primary)' },
+  });
+
   async function getStudents(q = '') {
     try {
       const statusParam = activeTab === 'students' ? 'active' : 'inactive';
-      let url = `/api/v1/students/all?status=${statusParam}`;
-      if (q) url += `&full_name=${q}`;
+      let url = `/api/v1/students/all?status=${statusParam}&page=${page}&limit=${ITEMS_PER_PAGE}&sort_by=${sortBy}&sort_order=${sortOrder}`;
+      if (q) url += `&search=${encodeURIComponent(q)}`;
       const res = await api.get(url);
-      setStudents(res.data.data || []);
+      const data = res.data?.data || [];
+      setStudents(data);
+      const pag = res.data?.pagination;
+      if (pag) {
+        setTotalPages(pag.totalPages || 1);
+      } else {
+        setTotalPages(1);
+      }
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
@@ -100,7 +140,7 @@ export default function Students() {
 
   async function getAllGroups() {
     try {
-      const res = await api.get('/api/v1/groups');
+      const res = await api.get('/api/v1/groups?dropdown=true');
       setAllGroups(res.data?.data || res.data || []);
     } catch { }
   }
@@ -152,7 +192,7 @@ export default function Students() {
       form.groups.forEach(id => formData.append('groups', id));
       const res = await api.post('/api/v1/students', formData);
       if (res.data) {
-        getStudents();
+        getStudents(searchQuery);
         setIsDrawerOpen(false);
         resetForm();
       }
@@ -176,7 +216,7 @@ export default function Students() {
       form.groups.forEach(id => formData.append('groups', id));
       const res = await api.put(`/api/v1/students/${editingId}`, formData);
       if (res.data) {
-        getStudents();
+        getStudents(searchQuery);
         setIsDrawerOpen(false);
         setEditingId(null);
         resetForm();
@@ -221,14 +261,10 @@ export default function Students() {
 
   useEffect(() => {
     if (!token() || token() === 'undefined') { window.location.href = '/login'; return; }
-    const delayDebounce = setTimeout(() => { getStudents(searchQuery); }, 500);
-    return () => clearTimeout(delayDebounce);
-  }, [searchQuery, activeTab]);
+    getStudents(searchQuery);
+  }, [searchQuery, activeTab, page, sortBy, sortOrder]);
 
-  const totalPages = Math.max(1, Math.ceil(students.length / ITEMS_PER_PAGE));
-  const paginated = students.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-
-  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? paginated.map(s => s.id) : []);
+  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? students.map(s => s.id) : []);
   const handleToggleOne = (id) => setSelectedIds(prev =>
     prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
   );
@@ -279,18 +315,29 @@ export default function Students() {
               <TableRow>
                 <TableCell padding="checkbox">
                   <Checkbox size="small" onChange={handleToggleAll}
-                    checked={paginated.length > 0 && selectedIds.length === paginated.length}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < paginated.length} />
+                    checked={students.length > 0 && selectedIds.length === students.length}
+                    indeterminate={selectedIds.length > 0 && selectedIds.length < students.length} />
                 </TableCell>
-                {[t('StudentName') + ' ↓', t('StudentGroup'), t('StudentPhone'), t('StudentBirthDate'), t('StudentCreated'), t('Actions')].map(col => (
-                  <TableCell key={col} sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{col}</TableCell>
-                ))}
+                <TableCell sx={thSx('full_name')} onClick={() => handleSort('full_name')}>
+                  {t('StudentName')} <SortIcon field="full_name" />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('StudentGroup')}</TableCell>
+                <TableCell sx={thSx('phone')} onClick={() => handleSort('phone')}>
+                  {t('StudentPhone')} <SortIcon field="phone" />
+                </TableCell>
+                <TableCell sx={thSx('birth_date')} onClick={() => handleSort('birth_date')}>
+                  {t('StudentBirthDate')} <SortIcon field="birth_date" />
+                </TableCell>
+                <TableCell sx={thSx('created_at')} onClick={() => handleSort('created_at')}>
+                  {t('StudentCreated')} <SortIcon field="created_at" />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('Actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginated.length === 0 ? (
+              {students.length === 0 ? (
                 <TableRow><TableCell colSpan={7} align="center" sx={{ py: 6, color: 'var(--gray-400)' }}>{t('NoData')}</TableCell></TableRow>
-              ) : paginated.map((student) => {
+              ) : students.map((student) => {
                 const groups = student.studentGroups?.map(g => g.groups?.name).filter(Boolean) || [];
                 return (
                   <TableRow key={student.id} hover sx={{ '&:last-child td': { border: 0 } }}>
@@ -351,6 +398,7 @@ export default function Students() {
         sx={{ zIndex: 2000 }}
         slotProps={{ backdrop: { sx: { backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(2px)' } } }}
         PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}>
+        {/* Drawer content - same as before */}
         <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>{editingId ? t('StudentEditTitle') : t('StudentAddTitle')}</Typography>

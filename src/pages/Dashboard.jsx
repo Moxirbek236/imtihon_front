@@ -187,6 +187,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { key: greetingKey, emoji } = getGreeting();
   const userName = getUserName();
+  const initialized = useRef(false);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -196,6 +197,8 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     (async () => {
       try {
         const res = await api.get('/api/v1/dashboard/stats');

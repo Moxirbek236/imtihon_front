@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
@@ -73,11 +73,13 @@ export default function Groups() {
   const [rooms, setRooms] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
+  const [stats, setStats] = useState({ totalGroups: 0, uniqueTeachers: 0, totalStudents: 0 });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('groups');
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const initialized = useRef(false);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
@@ -90,11 +92,46 @@ export default function Groups() {
   const [studentSearch, setStudentSearch] = useState('');
   const [selectedStudents, setSelectedStudents] = useState([]);
 
+  // ===== FAQAT MOUNTDA: groups + stats = 2 ta so'rov =====
+  useEffect(() => {
+    if (!token() || token() === 'undefined') { window.location.href = '/login'; return; }
+    if (!initialized.current) {
+      initialized.current = true;
+      fetchGroups();
+      fetchStats();
+    }
+  }, []);
+
+  // Tab o'zgarganda: faqat groups + stats
+  useEffect(() => {
+    if (initialized.current) {
+      fetchGroups();
+      fetchStats();
+    }
+  }, [activeTab]);
+
+  // Drawer ochilganda: courses + rooms (faqat bir marta)
+  useEffect(() => {
+    if (drawerOpen && courses.length === 0) fetchCourses();
+    if (drawerOpen && rooms.length === 0) fetchRooms();
+  }, [drawerOpen]);
+
   async function fetchGroups() {
     try {
-      const res = await api.get('/api/v1/groups');
+      const statusParam = activeTab === 'archive' ? 'cancelled' : '';
+      let url = '/api/v1/groups';
+      if (statusParam) url += `?status=${statusParam}`;
+      const res = await api.get(url);
       setGroups(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch (e) { if (e.response?.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; } }
+  }
+
+  async function fetchStats() {
+    try {
+      const res = await api.get('/api/v1/groups/stats');
+      const d = res.data?.data || {};
+      setStats({ totalGroups: d.totalGroups || 0, uniqueTeachers: d.uniqueTeachers || 0, totalStudents: d.totalStudents || 0 });
+    } catch (e) { console.error('Stats fetch error:', e); }
   }
 
   async function fetchCourses() {
@@ -109,14 +146,6 @@ export default function Groups() {
   async function fetchStudents() {
     try { const res = await api.get('/api/v1/students/all'); setStudents(res.data?.data || res.data || []); } catch { }
   }
-
-  useEffect(() => {
-    if (!token() || token() === 'undefined') { window.location.href = '/login'; return; }
-    fetchGroups();
-  }, []);
-
-  const uniqueTeachers = new Set(groups.flatMap(g => (g.teachers || []).map(t => t.id))).size;
-  const totalStudents = groups.reduce((s, g) => s + (Number(g.students) || 0), 0);
 
   async function handleSubmit() {
     if (editingId) { await updateGroup(); } else { await saveGroup(); }
@@ -135,7 +164,7 @@ export default function Groups() {
         start_date: form.start_date, end_date: form.end_date, max_students: 30,
         teachers: form.teachers.map(Number), students: form.students.map(Number),
       });
-      fetchGroups(); setDrawerOpen(false); setForm(emptyForm());
+      fetchGroups(); fetchStats(); setDrawerOpen(false); setForm(emptyForm());
     } catch (e) {
       const msg = e.response?.data?.message;
       alert(t('ErrorOccurred') + ': ' + (Array.isArray(msg) ? msg.join(', ') : msg || t('Save')));
@@ -155,7 +184,7 @@ export default function Groups() {
         start_date: form.start_date, end_date: form.end_date, max_students: 30,
         teachers: form.teachers.map(Number), students: form.students.map(Number),
       });
-      fetchGroups(); setDrawerOpen(false); setEditingId(null); setForm(emptyForm());
+      fetchGroups(); fetchStats(); setDrawerOpen(false); setEditingId(null); setForm(emptyForm());
     } catch (e) {
       const msg = e.response?.data?.message;
       alert(t('ErrorOccurred') + ': ' + (Array.isArray(msg) ? msg.join(', ') : msg || t('Save')));
@@ -168,23 +197,16 @@ export default function Groups() {
 
   async function openEditDrawer(group) {
     setEditingId(group.id);
-    let currentCourses = courses;
-    let currentRooms = rooms;
-    if (courses.length === 0) {
-      try { const res = await api.get('/api/v1/courses/all'); currentCourses = res.data?.data || res.data || []; setCourses(currentCourses); } catch {}
-    }
-    if (rooms.length === 0) {
-      try { const res = await api.get('/api/v1/rooms?status=active'); currentRooms = res.data?.data || res.data || []; setRooms(currentRooms); } catch {}
-    }
-    const foundCourse = currentCourses.find(c => c.name === group.course);
-    const foundRoom = currentRooms.find(r => r.name === group.rooms);
+    if (students.length === 0) await fetchStudents();
+    if (teachers.length === 0) await fetchTeachers();
     let studentIds = [];
     try {
-      await fetchStudents(); await fetchTeachers();
       const res = await api.get(`/api/v1/groups/${group.id}`);
       const fullGroupData = res.data?.data || res.data;
       studentIds = fullGroupData.studentGroups?.map(sg => sg.students?.id).filter(Boolean) || [];
     } catch (e) { console.error("Guruh tafsilotlarini yuklashda xatolik:", e); }
+    const foundCourse = courses.find(c => c.name === group.course);
+    const foundRoom = rooms.find(r => r.name === group.rooms);
     setForm({
       id: group.id, name: group.name, description: group.description || group.name,
       course_id: foundCourse ? foundCourse.id : '', room_id: foundRoom ? foundRoom.id : '',
@@ -202,30 +224,36 @@ export default function Groups() {
     if (!groupToDelete) return;
     try {
       await api.delete(`/api/v1/groups/${groupToDelete}`);
-      fetchGroups(); setDeleteConfirmOpen(false); setGroupToDelete(null);
-    } catch (e) {
-      alert(t('ErrorOccurred') + ': ' + (e.response?.data?.message || t('Delete')));
-    }
+      fetchGroups(); fetchStats(); setDeleteConfirmOpen(false); setGroupToDelete(null);
+    } catch (e) { alert(t('ErrorOccurred') + ': ' + (e.response?.data?.message || t('Delete'))); }
   };
 
   async function restoreGroup(id) {
     try {
       await api.put(`/api/v1/groups/${id}`, { status: 'active' });
-      fetchGroups();
-    } catch (e) {
-      alert(t('ErrorOccurred') + ': ' + (e.response?.data?.message || t('Restore')));
-    }
+      fetchGroups(); fetchStats();
+    } catch (e) { alert(t('ErrorOccurred') + ': ' + (e.response?.data?.message || t('Restore'))); }
   }
 
   const toggleDay = (day) => setForm(f => ({
     ...f, week_day: f.week_day.includes(day) ? f.week_day.filter(d => d !== day) : [...f.week_day, day]
   }));
 
-  const openTeacherModal = () => { setSelectedTeachers(form.teachers.map(Number)); setTeacherSearch(''); setTeacherModalOpen(true); };
+  const openTeacherModal = () => {
+    if (teachers.length === 0) fetchTeachers();
+    setSelectedTeachers(form.teachers.map(Number));
+    setTeacherSearch('');
+    setTeacherModalOpen(true);
+  };
   const confirmTeachers = () => { setForm(f => ({ ...f, teachers: selectedTeachers })); setTeacherModalOpen(false); };
   const toggleTeacher = (id) => setSelectedTeachers(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
-  const openStudentModal = () => { setSelectedStudents(form.students.map(Number)); setStudentSearch(''); setStudentModalOpen(true); };
+  const openStudentModal = () => {
+    if (students.length === 0) fetchStudents();
+    setSelectedStudents(form.students.map(Number));
+    setStudentSearch('');
+    setStudentModalOpen(true);
+  };
   const confirmStudents = () => { setForm(f => ({ ...f, students: selectedStudents })); setStudentModalOpen(false); };
   const toggleStudent = (id) => setSelectedStudents(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
 
@@ -234,10 +262,6 @@ export default function Groups() {
   );
   const filteredStudents = students.filter(s =>
     s.full_name?.toLowerCase().includes(studentSearch.toLowerCase()) || s.phone?.includes(studentSearch)
-  );
-
-  const displayedGroups = groups.filter(g =>
-    activeTab === 'archive' ? g.status === 'cancelled' : g.status !== 'cancelled'
   );
 
   return (
@@ -268,9 +292,9 @@ export default function Groups() {
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2.5, mb: 3 }}>
         {[
-          { label: t('TotalGroups'), value: groups.length, icon: <PeopleAltIcon sx={{ fontSize: 28, color: 'var(--primary)' }} />, bg: 'var(--primary-light)' },
-          { label: t('TeachersCount'), value: uniqueTeachers, icon: <SchoolIcon sx={{ fontSize: 28, color: 'var(--success)' }} />, bg: 'var(--success-light)' },
-          { label: t('StudentsCount'), value: totalStudents, icon: <SchoolIcon sx={{ fontSize: 28, color: 'var(--warning)' }} />, bg: 'var(--warning-light)' },
+          { label: t('TotalGroups'), value: stats.totalGroups, icon: <PeopleAltIcon sx={{ fontSize: 28, color: 'var(--primary)' }} />, bg: 'var(--primary-light)' },
+          { label: t('TeachersCount'), value: stats.uniqueTeachers, icon: <SchoolIcon sx={{ fontSize: 28, color: 'var(--success)' }} />, bg: 'var(--success-light)' },
+          { label: t('StudentsCount'), value: stats.totalStudents, icon: <SchoolIcon sx={{ fontSize: 28, color: 'var(--warning)' }} />, bg: 'var(--warning-light)' },
         ].map((card, i) => (
           <Paper key={i} elevation={0} sx={{ p: 3, border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Box>
@@ -295,9 +319,9 @@ export default function Groups() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {displayedGroups.length === 0 ? (
+              {groups.length === 0 ? (
                 <TableRow><TableCell colSpan={9} align="center" sx={{ py: 6, color: 'var(--gray-400)' }}>{t('NoData')}</TableCell></TableRow>
-              ) : displayedGroups.map((group) => {
+              ) : groups.map((group) => {
                 const teachers = group.teachers || [];
                 const students = group.students || [];
                 const days = (group.week_day || []).map(d => DAY_SHORT[d] || d).join(', ');
@@ -401,7 +425,7 @@ export default function Groups() {
             <Box>
               <Typography sx={{ mb: 0.5, fontWeight: 600, fontSize: '0.82rem', color: 'var(--gray-700)' }}>{t('CourseRequired')} <span style={{ color: 'var(--danger)' }}>*</span></Typography>
               <FormControl fullWidth size="small">
-                <Select value={form.course_id} onOpen={fetchCourses}
+                <Select value={form.course_id}
                   onChange={e => setForm({ ...form, course_id: e.target.value })}
                   MenuProps={{ sx: { zIndex: 3000 } }} displayEmpty sx={{ borderRadius: '8px' }}>
                   <MenuItem value="" disabled>{t('CourseSelect')}</MenuItem>
@@ -412,7 +436,7 @@ export default function Groups() {
             <Box>
               <Typography sx={{ mb: 0.5, fontWeight: 600, fontSize: '0.82rem', color: 'var(--gray-700)' }}>{t('RoomRequired')} <span style={{ color: 'var(--danger)' }}>*</span></Typography>
               <FormControl fullWidth size="small">
-                <Select value={form.room_id} onOpen={fetchRooms}
+                <Select value={form.room_id}
                   onChange={e => setForm({ ...form, room_id: e.target.value })}
                   MenuProps={{ sx: { zIndex: 3000 } }} displayEmpty sx={{ borderRadius: '8px' }}>
                   <MenuItem value="" disabled>{t('RoomSelect')}</MenuItem>
@@ -463,7 +487,7 @@ export default function Groups() {
                   })}
                 </Box>
               )}
-              <Box onClick={() => { fetchTeachers(); openTeacherModal(); }}
+              <Box onClick={openTeacherModal}
                 sx={{ border: '1.5px dashed var(--border)', borderRadius: '8px', p: 1.5, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, '&:hover': { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-light)' } }}>
                 <AddIcon sx={{ fontSize: 18, color: 'var(--primary)' }} />
                 <Typography sx={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>{t('AddTeacherBtn')}</Typography>
@@ -483,7 +507,7 @@ export default function Groups() {
                   })}
                 </Box>
               )}
-              <Box onClick={() => { fetchStudents(); openStudentModal(); }}
+              <Box onClick={openStudentModal}
                 sx={{ border: '1.5px dashed var(--border)', borderRadius: '8px', p: 1.5, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, '&:hover': { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-light)' } }}>
                 <AddIcon sx={{ fontSize: 18, color: 'var(--primary)' }} />
                 <Typography sx={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>{t('AddStudentBtn')}</Typography>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import {
@@ -40,6 +40,7 @@ export default function Courses() {
   const [activeTab, setActiveTab] = useState('active');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const initialized = useRef(false);
 
   async function getCourses() {
     const res = await api.get(`/api/v1/courses/all?status=${activeTab}`);
@@ -47,7 +48,16 @@ export default function Courses() {
   }
 
   useEffect(() => {
-    getCourses();
+    if (!initialized.current) {
+      initialized.current = true;
+      getCourses();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialized.current) {
+      getCourses();
+    }
   }, [activeTab]);
 
   function openCreateDrawer() {

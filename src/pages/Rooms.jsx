@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import {
@@ -23,6 +23,7 @@ export default function Rooms() {
   const [activeTab, setActiveTab] = useState('active');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState(null);
+  const initialized = useRef(false);
 
   async function getRooms() {
     const res = await api.get(`/api/v1/rooms?status=${activeTab}`);
@@ -30,7 +31,16 @@ export default function Rooms() {
   }
 
   useEffect(() => {
-    getRooms();
+    if (!initialized.current) {
+      initialized.current = true;
+      getRooms();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialized.current) {
+      getRooms();
+    }
   }, [activeTab]);
 
   function openCreateDrawer() {

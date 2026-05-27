@@ -16,6 +16,8 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import '../i18n';
 
@@ -39,7 +41,11 @@ export default function Staff() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState('active');
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
+  const [sortBy, setSortBy] = useState('id');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
@@ -55,10 +61,19 @@ export default function Staff() {
   async function getStaff() {
     try {
       const statusParam = activeTab === 'active' ? 'active' : 'inactive';
-      let url = `/api/v1/users/all?status=${statusParam}`;
+      const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
+      let url = `/api/v1/users/all?status=${statusParam}&page=${page}&limit=${ITEMS_PER_PAGE}&sort_by=${sortBy}&sort_order=${sortOrder}${searchParam}`;
       const res = await api.get(url);
-      const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      setStaffList(data);
+      const responseData = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      setStaffList(responseData);
+      const pag = res.data?.pagination;
+      if (pag) {
+        setTotalPages(pag.totalPages || 1);
+        setTotalItems(pag.total || responseData.length);
+      } else {
+        setTotalPages(1);
+        setTotalItems(responseData.length);
+      }
     } catch (err) {
       console.error("Xodimlarni yuklashda xatolik:", err);
     }
@@ -168,24 +183,47 @@ export default function Staff() {
     setForm({ full_name: '', email: '', password: '', phone: '', address: '' });
   }
 
-  useEffect(() => {
-    getStaff();
-  }, [activeTab]);
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setPage(1);
+  };
 
-  const filteredStaff = staffList.filter(user => {
-    const term = searchQuery.toLowerCase();
-    return (
-      (user.full_name || '').toLowerCase().includes(term) ||
-      (user.email || '').toLowerCase().includes(term) ||
-      (user.phone || '').toLowerCase().includes(term) ||
-      (user.role || '').toLowerCase().includes(term)
-    );
+  const SortIcon = ({ field }) => {
+    if (sortBy !== field) return null;
+    return sortOrder === 'asc' 
+      ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />
+      : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />;
+  };
+
+  const thSortSx = (field) => ({
+    fontWeight: 600,
+    color: 'var(--text-secondary)',
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    userSelect: 'none',
+    '&:hover': { color: 'var(--primary)' },
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredStaff.length / ITEMS_PER_PAGE));
-  const paginated = filteredStaff.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  // Bitta useEffect: activeTab, page, sortBy, sortOrder o'zgarganda chaqiriladi
+  useEffect(() => {
+    getStaff();
+  }, [activeTab, page, sortBy, sortOrder]);
 
-  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? paginated.map(u => u.id) : []);
+  // Search o'zgarganda: page=1 set qiladi, useEffect triggerni o'zi ishlaydi
+  useEffect(() => {
+    if (searchQuery !== undefined) {
+      setPage(1);
+    }
+  }, [searchQuery]);
+
+  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? staffList.map(u => u.id) : []);
   const handleToggleOne = (id) => setSelectedIds(prev =>
     prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
   );
@@ -234,8 +272,8 @@ export default function Staff() {
               <TableRow>
                 <TableCell padding="checkbox">
                   <Checkbox size="small" onChange={handleToggleAll}
-                    checked={paginated.length > 0 && selectedIds.length === paginated.length}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < paginated.length}
+                    checked={staffList.length > 0 && selectedIds.length === staffList.length}
+                    indeterminate={selectedIds.length > 0 && selectedIds.length < staffList.length}
                     sx={{ '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: 'var(--primary)' } }} />
                 </TableCell>
                 {[t('StaffName'), t('StaffRole'), t('StaffPhone'), t('StaffEmail'), t('StaffAddress'), t('StaffCreated'), t('Actions')].map(col => (
@@ -244,9 +282,9 @@ export default function Staff() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginated.length === 0 ? (
+              {staffList.length === 0 ? (
                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'var(--gray-400)' }}>{t('NoData')}</TableCell></TableRow>
-              ) : paginated.map((user) => (
+              ) : staffList.map((user) => (
                 <TableRow key={user.id} hover sx={{ '&:last-child td': { border: 0 } }}>
                   <TableCell padding="checkbox">
                     <Checkbox size="small" checked={selectedIds.includes(user.id)}

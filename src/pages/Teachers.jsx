@@ -20,6 +20,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import '../i18n';
 
 const ITEMS_PER_PAGE = 10;
@@ -45,7 +47,10 @@ export default function Teachers() {
   const [groupSearch, setGroupSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState('teachers');
+  const [sortBy, setSortBy] = useState('id');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
@@ -63,13 +68,46 @@ export default function Teachers() {
 
   const token = () => localStorage.getItem('token');
 
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setPage(1);
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortBy !== field) return null;
+    return sortOrder === 'asc' 
+      ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />
+      : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.3, verticalAlign: 'middle' }} />;
+  };
+
+  const thSortSx = (field) => ({
+    fontWeight: 600,
+    color: 'var(--text-secondary)',
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    userSelect: 'none',
+    '&:hover': { color: 'var(--primary)' },
+  });
+
   async function getTeachers(search = '') {
     try {
       const statusParam = activeTab === 'teachers' ? 'active' : 'inactive';
-      let url = `/api/v1/teachers?status=${statusParam}`;
-      if (search) url += `&full_name=${search}`;
+      let url = `/api/v1/teachers?status=${statusParam}&page=${page}&limit=${ITEMS_PER_PAGE}&sort_by=${sortBy}&sort_order=${sortOrder}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
       const res = await api.get(url);
-      setTeachers(res.data.data || []);
+      const data = res.data?.data || [];
+      setTeachers(data);
+      const pag = res.data?.pagination;
+      if (pag) {
+        setTotalPages(pag.totalPages || 1);
+      }
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
@@ -79,8 +117,8 @@ export default function Teachers() {
   }
 
   async function getAllGroups() {
-    const res = await api.get('/api/v1/groups');
-    setAllGroups(res.data || []);
+    const res = await api.get('/api/v1/groups?dropdown=true');
+    setAllGroups(res.data?.data || []);
   }
 
   function openCreateDrawer() {
@@ -198,14 +236,10 @@ export default function Teachers() {
       window.location.href = '/login';
       return;
     }
-    const timer = setTimeout(() => { getTeachers(searchQuery); }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, activeTab]);
+    getTeachers(searchQuery);
+  }, [searchQuery, activeTab, page, sortBy, sortOrder]);
 
-  const totalPages = Math.max(1, Math.ceil(teachers.length / ITEMS_PER_PAGE));
-  const paginated = teachers.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-
-  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? paginated.map(t => t.id) : []);
+  const handleToggleAll = (e) => setSelectedIds(e.target.checked ? teachers.map(t => t.id) : []);
   const handleToggleOne = (id) => setSelectedIds(prev =>
     prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
   );
@@ -265,19 +299,31 @@ export default function Teachers() {
               <TableRow>
                 <TableCell padding="checkbox">
                   <Checkbox size="small" onChange={handleToggleAll}
-                    checked={paginated.length > 0 && selectedIds.length === paginated.length}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < paginated.length}
+                    checked={teachers.length > 0 && selectedIds.length === teachers.length}
+                    indeterminate={selectedIds.length > 0 && selectedIds.length < teachers.length}
                     sx={{ '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: 'var(--primary)' } }} />
                 </TableCell>
-                {[t('TeacherName') + ' ↓', t('TeacherGroup'), t('TeacherPhone'), t('Email'), t('Address'), t('TeacherCreated'), t('Actions')].map(col => (
-                  <TableCell key={col} sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{col}</TableCell>
-                ))}
+                <TableCell sx={thSortSx('full_name')} onClick={() => handleSort('full_name')}>
+                  {t('TeacherName')} <SortIcon field="full_name" />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('TeacherGroup')}</TableCell>
+                <TableCell sx={thSortSx('phone')} onClick={() => handleSort('phone')}>
+                  {t('TeacherPhone')} <SortIcon field="phone" />
+                </TableCell>
+                <TableCell sx={thSortSx('email')} onClick={() => handleSort('email')}>
+                  {t('Email')} <SortIcon field="email" />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('Address')}</TableCell>
+                <TableCell sx={thSortSx('created_at')} onClick={() => handleSort('created_at')}>
+                  {t('TeacherCreated')} <SortIcon field="created_at" />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('Actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginated.length === 0 ? (
+              {teachers.length === 0 ? (
                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'var(--gray-400)' }}>{t('NoData')}</TableCell></TableRow>
-              ) : paginated.map((teacher) => {
+              ) : teachers.map((teacher) => {
                 const groups = teacher.teachersGroups?.map(g => g.group?.name).filter(Boolean) || [];
                 return (
                   <TableRow key={teacher.id} hover sx={{ '&:last-child td': { border: 0 } }}>
