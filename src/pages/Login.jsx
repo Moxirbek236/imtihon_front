@@ -85,7 +85,7 @@ export default function Login() {
         px: { xs: 3, sm: 6, md: 8 },
       }}>
         <Box sx={{ width: '100%', maxWidth: 340 }}>
-          <Box component="img" src="/najot-logo.svg" sx={{ height: 48, mb: 2, objectFit: 'contain' }} />
+          <Box component="img" src="/najot-logo.png" sx={{ height: 48, mb: 2, objectFit: 'contain' }} />
           <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)', mb: 0.5 }}>
             {t('LoginTitle')}
           </Typography>
