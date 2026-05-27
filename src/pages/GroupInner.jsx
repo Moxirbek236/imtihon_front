@@ -190,7 +190,7 @@ export default function GroupInner() {
   const resolvePhoto = (photo) => {
     if (!photo) return undefined;
     if (photo.startsWith('http') || photo.startsWith('/')) return photo;
-    return `http://localhost:3000/file/${photo}`;
+    return `https://seven-oy-crm-backned.onrender.com/file/${photo}`;
   };
 
   const params = [

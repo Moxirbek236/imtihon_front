@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  import.meta.env.VITE_API_URL || 'https://seven-oy-crm-backned.onrender.com';
 
 const IS_DEV = import.meta.env.DEV;
 

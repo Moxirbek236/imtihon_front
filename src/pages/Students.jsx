@@ -344,7 +344,7 @@ export default function Students() {
                     <TableCell padding="checkbox"><Checkbox size="small" checked={selectedIds.includes(student.id)} onChange={() => handleToggleOne(student.id)} /></TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar src={student.photo ? `http://localhost:3000/file/${student.photo}` : undefined}
+                        <Avatar src={student.photo ? `https://seven-oy-crm-backned.onrender.com/file/${student.photo}` : undefined}
                           sx={{ width: 32, height: 32, backgroundColor: getColor(student.id), fontSize: '0.75rem', fontWeight: 700 }}>
                           {getInitials(student.full_name)}
                         </Avatar>

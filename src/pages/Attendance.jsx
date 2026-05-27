@@ -154,7 +154,7 @@ export default function Attendance() {
   const resolvePhoto = (photo) => {
     if (!photo) return undefined;
     if (photo.startsWith('http') || photo.startsWith('/')) return photo;
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/file/${photo}`;
+    return `${import.meta.env.VITE_API_URL || 'https://seven-oy-crm-backned.onrender.com'}/file/${photo}`;
   };
 
   const startTime = group.start_time || '09:30';

@@ -64,7 +64,7 @@ function fmtFileSize(bytes) {
 function getFullVideoUrl(url) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  let baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  let baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://seven-oy-crm-backned.onrender.com';
   if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
   baseUrl = baseUrl.replace(/\/api\/v1$/, '');
   return `${baseUrl}/file/${url}`;

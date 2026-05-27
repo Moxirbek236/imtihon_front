@@ -16,13 +16,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        // target: 'https://crm-backend-l7jq.onrender.com',
-        target: 'http://localhost:3000',
+        target: 'https://seven-oy-crm-backned.onrender.com',
+        // target: 'http://localhost:3000',
         changeOrigin: true,
       },
       '/file': {
-        // target: 'https://crm-backend-l7jq.onrender.com',
-        target: 'http://localhost:3000',
+        target: 'https://seven-oy-crm-backned.onrender.com',
+        // target: 'http://localhost:3000',
         changeOrigin: true,
       }
     }
