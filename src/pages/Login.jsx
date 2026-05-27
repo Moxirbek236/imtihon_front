@@ -8,8 +8,8 @@ import '../i18n';
 export default function Login() {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
-  const [login, setLogin] = useState('+998907012161');
-  const [password, setPassword] = useState('Rahmonbergan04@');
+  const [login, setLogin] = useState('+998991459686');
+  const [password, setPassword] = useState('sjtmsimram10');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
