@@ -153,7 +153,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
 
 
 
-  const handleCloseAlert = (event, reason) => {
+  const handleCloseAlert = (event: any, reason?: string) => {
     if (reason === "clickaway") return;
     setAlert((prev) => ({ ...prev, open: false }));
   };
@@ -1344,7 +1344,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert 
-          onClose={handleCloseAlert} 
+          onClose={() => setAlert((prev) => ({ ...prev, open: false }))} 
           severity={alert.severity} 
           variant="filled"
           sx={{ 
