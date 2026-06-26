@@ -29,7 +29,18 @@ export default function GroupInner({ id }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [oneGroup, setOneGroup] = useState<any>(null);
-  const [schedules, setSchedules] = useState({});
+  interface DayData {
+    month: string;
+    day: number;
+    isCompleted?: boolean;
+  }
+
+  interface ScheduleMonth {
+    isActive: boolean;
+    days: DayData[];
+  }
+
+  const [schedules, setSchedules] = useState<Record<string, ScheduleMonth>>({});
   const [tabValue, setTabValue] = useState(Number(searchParams.get("tab")) || 0);
   const [showAllMonths, setShowAllMonths] = useState(false);
   const [openMentors, setOpenMentors] = useState(true);
