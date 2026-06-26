@@ -52,7 +52,18 @@ const dayOptions = [
   { label: "Yakshanba", value: "Sunday", short: "Yak" },
 ];
 
-const initialForm = {
+const initialForm: {
+  name: string;
+  course_id: string;
+  room_id: string;
+  week_day: string[];
+  start_time: string;
+  start_date: string;
+  description: string;
+  teachers: number[];
+  students: number[];
+  max_student: number;
+} = {
   name: "",
   course_id: "",
   room_id: "",
@@ -114,7 +125,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
-  const [alert, setAlert] = useState({ open: false, message: "", severity: "error" });
+  const [alert, setAlert] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({ open: false, message: "", severity: "error" });
   
   const [page, setPage] = useState(initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);

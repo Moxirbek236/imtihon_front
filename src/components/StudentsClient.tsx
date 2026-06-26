@@ -50,7 +50,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
   const [page, setPage] = useState(initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
   const [searchQuery, setSearchQuery] = useState(searchParams?.search || "");
-  const [alert, setAlert] = useState({ open: false, message: "", severity: "error" });
+  const [alert, setAlert] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({ open: false, message: "", severity: "error" });
 
   const [editId, setEditId] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<any>(null);

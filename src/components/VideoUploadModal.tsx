@@ -26,7 +26,7 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
   const [lessons, setLessons] = useState<any[]>([]);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({ open: false, message: "", severity: "success" });
 
   // Lessons yuklash
   useEffect(() => {

@@ -24,16 +24,19 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  // Snackbar state
-  const [snackbar, setSnackbar] = useState({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "warning" | "info";
+  }>({
     open: false,
     message: "",
-    severity: "success", // "success" | "error"
+    severity: "success",
   });
 
   const router = useRouter();
 
-  const showAlert = (message, severity = "success") => {
+  const showAlert = (message: string, severity: "success" | "error" | "warning" | "info" = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
