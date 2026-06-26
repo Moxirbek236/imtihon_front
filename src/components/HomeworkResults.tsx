@@ -220,7 +220,7 @@ export default function HomeworkResults() {
                   }}
                   onClick={() => {
                     if (tabValue < 3) {
-                      navigate(`/dashboard/groups/${id}/homework/${homeworkId}/result/${student.id}`);
+                      router.push(`/dashboard/groups/${id}/homework/${homeworkId}/result/${student.id}`);
                     }
                   }}
                 >

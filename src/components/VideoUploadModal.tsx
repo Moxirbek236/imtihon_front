@@ -19,7 +19,7 @@ import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import axiosClient from "../api/axios";
 
 export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) {
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Holat: "idle" = fayl tanlanmagan, "ready" = fayl tanlangan
   const [files, setFiles] = useState<any[]>([]); // [{file, lessonId, videoName}]

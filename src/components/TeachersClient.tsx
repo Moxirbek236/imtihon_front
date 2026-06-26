@@ -65,7 +65,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
   const [page, setPage] = useState(initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
   const [searchQuery, setSearchQuery] = useState(searchParams?.search || "");
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState<any>(null);
 
   const [editId, setEditId] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<any>(null);
@@ -638,7 +638,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
                 type="file"
                 hidden
                 accept="image/jpeg, image/png"
-                onChange={(e) => setPhoto(e.target.files[0])}
+                onChange={(e) => setPhoto(e.target.files?.[0] || null)}
               />
               <Box sx={{ fontSize: 28, mb: 1 }}>☁️</Box> 
               <Typography sx={{ fontSize: 12, color: "#374151" }}>

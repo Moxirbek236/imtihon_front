@@ -30,7 +30,7 @@ export default function StudentGroupLessons({ id: groupId }) {
   const [videosLoading, setVideosLoading] = useState({});
   const [currentVideo, setCurrentVideo] = useState<any>(null);
   const [currentLessonName, setCurrentLessonName] = useState("");
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -39,7 +39,7 @@ export default function StudentGroupLessons({ id: groupId }) {
         const res = await axiosClient.get(`/students/my/group/${groupId}/lessons`);
         const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
         const filtered = data.filter((l) => l && l.topic);
-        filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         setLessons(filtered);
 
         // Auto-open first lesson that has videos
