@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://seven-oy-crm-backned-1.onrender.com/api/v1",
+  },
   // Vercel'da deploy qilinganda barcha routelarni index.html ga yo'naltirish
   // Bu Next.js app router bilan SPA-like navigation imkonini beradi
   async rewrites() {
