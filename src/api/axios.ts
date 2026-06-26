@@ -18,10 +18,7 @@ axiosClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-<<<<<<< HEAD
 
-=======
->>>>>>> cce73d74249cdab1cf4e57beb72abbc4162c6622
 axiosClient.interceptors.response.use(
   (response) => {
     return response;
@@ -36,8 +33,4 @@ axiosClient.interceptors.response.use(
   }
 );
 
-<<<<<<< HEAD
 export default axiosClient;
-=======
-export default axiosClient;
->>>>>>> cce73d74249cdab1cf4e57beb72abbc4162c6622
