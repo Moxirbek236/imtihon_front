@@ -32,6 +32,13 @@ export default function Layout() {
     setIsAuthorized(!!localStorage.getItem("token"));
   }, []);
 
+  // Close management panel when navigating to non-management pages
+  useEffect(() => {
+    if (!location.pathname.startsWith("/management")) {
+      setManagementOpen(false);
+    }
+  }, [location.pathname]);
+
   if (isAuthorized === null) {
     return null; // or a loading skeleton
   }
@@ -78,12 +85,6 @@ export default function Layout() {
     }
   };
 
-  // Close management panel when navigating to non-management pages
-  useEffect(() => {
-    if (!location.pathname.startsWith("/management")) {
-      setManagementOpen(false);
-    }
-  }, [location.pathname]);
 
   const handleSidebarToggle = () => {
     setSidebarCollapsed((prev) => !prev);

@@ -12,6 +12,13 @@ import {
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
+const tabs = [
+  { label: "Kutayotganlar", status: "PENDING", badgeColor: "#f59e0b" },
+  { label: "Qaytarilganlar", status: "REJECTED", badgeColor: "#ef4444" },
+  { label: "Qabul qilinganlar", status: "ACCEPTED", badgeColor: "#10b981" },
+  { label: "Bajarilmagan", status: null, badgeColor: "#10b981" },
+];
+
 export default function HomeworkResults() {
   const { id, homeworkId } = useParams();
   const navigate = useNavigate();
@@ -19,13 +26,6 @@ export default function HomeworkResults() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [homeworkInfo, setHomeworkInfo] = useState<any>(null);
-
-  const tabs = [
-    { label: "Kutayotganlar", status: "PENDING", badgeColor: "#f59e0b" },
-    { label: "Qaytarilganlar", status: "REJECTED", badgeColor: "#ef4444" },
-    { label: "Qabul qilinganlar", status: "ACCEPTED", badgeColor: "#10b981" },
-    { label: "Bajarilmagan", status: null, badgeColor: "#10b981" },
-  ];
 
   useEffect(() => {
     async function fetchHomeworkDetails() {
