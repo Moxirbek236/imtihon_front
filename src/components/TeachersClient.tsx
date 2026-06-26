@@ -71,16 +71,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
   const [deleteId, setDeleteId] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  
-  const formData = new FormData();
-  formData.append("full_name",fullName);
-  formData.append("phone",phone);
-  formData.append("email",mail);
-  formData.append("address",address);
-  formData.append("password",password);
-  formData.append("groups", groups.map(g => g.id)); 
-  formData.append("photo",photo); 
- 
+
   const toggleSelect = (id) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
@@ -160,7 +151,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
     formData.append("email", mail);
     formData.append("address", address);
     if (password) formData.append("password", password);
-    formData.append("groups", groups.map(g => g.id)); 
+    formData.append("groups", JSON.stringify(groups.map(g => g.id)));
     if (photo) formData.append("photo", photo); 
 
     try { 

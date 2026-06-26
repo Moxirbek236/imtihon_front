@@ -152,7 +152,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
     formData.append("address", address); 
     if (password) formData.append("password", password);
     if (photo) formData.append("photo", photo);
-    formData.append("groups", selectedGroups.map(g => g.id));
+    formData.append("groups", JSON.stringify(selectedGroups.map(g => g.id)));
 
     try {
       if (editId) {
@@ -578,7 +578,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
                 type="file"
                 hidden
                 accept="image/*"
-                onChange={(e) => setPhoto(e.target.files[0])}
+                onChange={(e) => setPhoto(e.target.files?.[0] || null)}
               />
               <FileUpload sx={{ fontSize: 24, color: "#9ca3af", mb: 1 }} />
               <Typography sx={{ fontSize: 12, color: "#374151" }}>
@@ -618,7 +618,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={handleCloseAlert}
+          onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
           severity={alert.severity}
           variant="filled"
           sx={{ bgcolor: "#991b1b", color: "white", fontWeight: 600, "& .MuiAlert-icon": { color: "white" } }}

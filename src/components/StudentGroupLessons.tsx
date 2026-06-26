@@ -89,7 +89,7 @@ export default function StudentGroupLessons({ id: groupId }) {
 
   const handleAccordionChange = (lessonId, lessonTopic) => (event, isExpanded) => {
     if (isExpanded) {
-      openLesson(lessonId, lessonTopic);
+      openLesson(lessonId, lessonTopic, lessons);
     } else {
       setExpandedId(null);
     }

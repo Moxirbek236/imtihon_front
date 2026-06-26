@@ -38,7 +38,7 @@ import {
 const SIDEBAR_WIDTH = 300;
 const COLLAPSED_WIDTH = 64;
 
-const navItems = [
+const navItems: any[] = [
   { label: "Asosiy", icon: <Home />, id: "home" },
   { label: "O'qituvchilar", icon: <Person />, id: "teachers" },
   { label: "Guruhlar", icon: <Group />, id: "groups" },
@@ -96,7 +96,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
               flexShrink: 0,
             }}
           >
-            <img src={logoImg} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={logoImg.src} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </Box>
           <Collapse in={!collapsed} orientation="horizontal" timeout={300}>
             <Box sx={{ fontWeight: 800, fontSize: 20, whiteSpace: "nowrap", ml: 0.5 }}>
@@ -339,7 +339,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
   }
 
   if (role === "STUDENT") {
-    const studentNavItems = [
+    const studentNavItems: any[] = [
       { label: "Bosh sahifa", icon: <Home />, id: "home" },
       { label: "To'lovlarim", icon: <CreditCard />, id: "payments" },
       { label: "Guruhlarim", icon: <Groups />, id: "my-groups" },
@@ -390,7 +390,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
               flexShrink: 0,
             }}
           >
-            <img src={logoImg} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={logoImg.src} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </Box>
           <Collapse in={!collapsed} orientation="horizontal" timeout={300}>
             <Box sx={{ fontWeight: 800, fontSize: 20, whiteSpace: "nowrap", ml: 0.5 }}>
@@ -518,7 +518,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
             flexShrink: 0,
           }}
         >
-          <img src={logoImg} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          <img src={logoImg.src} alt="NajotEdu CRM" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </Box>
         <Collapse in={!collapsed} orientation="horizontal" timeout={300}>
           <Box sx={{ fontWeight: 800, fontSize: 20, whiteSpace: "nowrap", ml: 0.5 }}>

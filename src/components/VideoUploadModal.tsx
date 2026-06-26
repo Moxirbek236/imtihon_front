@@ -50,8 +50,8 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
   };
 
   // Fayl qo'shish
-  const addFiles = (newFiles) => {
-    const videoFiles = Array.from(newFiles).filter((f) =>
+  const addFiles = (newFiles: any) => {
+    const videoFiles = Array.from(newFiles).filter((f: any) =>
       ["mp4", "webm", "mov", "avi", "mpeg", "mkv", "m4v", "ogm"].includes(
         f.name.split(".").pop().toLowerCase()
       )
@@ -60,7 +60,7 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
       setSnackbar({ open: true, message: "Faqat video formatlar ruxsat etilgan!", severity: "warning" });
       return;
     }
-    const mapped = videoFiles.map((file) => ({
+    const mapped = videoFiles.map((file: any) => ({
       file,
       lessonId: "",
       videoName: file.name,

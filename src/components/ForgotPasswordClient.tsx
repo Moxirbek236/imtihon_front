@@ -117,7 +117,7 @@ export default function ForgotPassword() {
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex", overflow: "hidden", bgcolor: "#f1f5f9" }}>
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
-        <Alert onClose={() => handleCloseSnackbar()} severity={snackbar.severity as "success" | "error"} variant="filled" sx={{ borderRadius: 2, fontWeight: 600, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+        <Alert onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))} severity={snackbar.severity as "success" | "error"} variant="filled" sx={{ borderRadius: 2, fontWeight: 600, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

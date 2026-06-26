@@ -32,7 +32,7 @@ export default function ProfileClient({ initialProfile }) {
       setProfile(initialProfile);
       setLoading(false);
     } else {
-      async function fetchProfile() {
+      const fetchProfile = async () => {
         try {
           const res = await axiosClient.get("/auth/profile");
           if (res?.data?.success) {

@@ -110,7 +110,7 @@ export default function Login() {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={handleCloseSnackbar}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
           severity={snackbar.severity}
           variant="filled"
           sx={{ minWidth: 280, boxShadow: 3 }}
