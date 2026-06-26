@@ -57,6 +57,7 @@ export default function Header({ darkMode, onToggleTheme }) {
     }
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    document.cookie = "token=; path=/; max-age=0";
     handleClose();
     router.push("/login");
   };

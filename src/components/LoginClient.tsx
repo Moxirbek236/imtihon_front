@@ -62,9 +62,10 @@ export default function Login() {
         const token = res.data.accessToken || res.data.token;
         const role = res.data.role;
 
-        // Token va rolni localStorage ga yozish (navigate dan OLDIN)
+        // Token va rolni localStorage va cookie ga yozish (navigate dan OLDIN)
         if (token) {
           localStorage.setItem("token", token);
+          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
         }
         if (role) {
           localStorage.setItem("role", role);
