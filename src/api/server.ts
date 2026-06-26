@@ -14,5 +14,9 @@ export async function serverFetch(endpoint: string, options: RequestInit = {}) {
     },
   });
 
-  return res.json();
+  const json = await res.json();
+  if (!res.ok) {
+    return { success: false, data: [], error: json };
+  }
+  return json;
 }

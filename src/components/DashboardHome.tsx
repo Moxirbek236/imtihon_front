@@ -80,7 +80,7 @@ export default function DashboardHome() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const res = await axiosClient.get("/dashboard");
+        const res = await axiosClient.get("/dashboard/stats");
         if (res.data?.success) {
           setData(res.data.data);
         }
