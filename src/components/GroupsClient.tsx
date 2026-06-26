@@ -222,7 +222,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
     // Client-side fetch: server props bo'lmaganda o'zida fetch qiladi
     async function fetchGroups() {
       try {
-        const res = await axiosClient.get(`/groups/all?page=${page}&limit=10${statusFilter ? `&status=${statusFilter}` : ""}`);
+        const res = await axiosClient.get(`/groups/all?page=${page}&limit=10`);
         if (res.data?.success) {
           setGroups(res.data.data || []);
           setTotalPages(res.data.pagination?.totalPages || 1);
