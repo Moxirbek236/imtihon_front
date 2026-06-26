@@ -166,7 +166,7 @@ export default function HomeworkCheck() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             <Slider
               value={grade}
-              onChange={(e, v) => setGrade(v)}
+              onChange={(e, v) => setGrade(v as number)}
               min={0}
               max={100}
               sx={{
