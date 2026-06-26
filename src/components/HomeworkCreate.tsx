@@ -36,7 +36,7 @@ export default function HomeworkCreate() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [lessonId, setLessonId] = useState("");
   const [description, setDescription] = useState("");
