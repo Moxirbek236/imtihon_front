@@ -386,7 +386,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
   };
 
   const renderTeacherNames = (group) => {
-    const names = group.groupTeachers?.map((item) => item.teacher?.full_name).filter(Boolean);
+    const names = group.teachers?.map((item) => item.teacher?.full_name).filter(Boolean);
     if (!names?.length) return "O'qituvchi yo'q";
     return names;
   };
@@ -722,7 +722,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
                   </Box>
 
                   <Typography sx={{ fontSize: 12, color: "#374151", textAlign: "center" }}>
-                    {group.room || "-"}
+                    {group.rooms || "-"}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: "center" }}>
