@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
 import {
   Box,
@@ -33,8 +33,9 @@ import {
 } from "@mui/icons-material";
 
 export default function HomeworkCreate() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const id = params.id as string;
+  const router = useRouter();
   const fileInputRef = useRef(null);
 
   const [lessonId, setLessonId] = useState("");
@@ -92,7 +93,7 @@ export default function HomeworkCreate() {
       });
       if (res.data?.success || res.status === 201) {
         setSnackbar({ open: true, message: "Uyga vazifa muvaffaqiyatli e'lon qilindi!", severity: "success" });
-        setTimeout(() => navigate(-1), 1500);
+        setTimeout(() => router.back(), 1500);
       }
     } catch (error) {
       console.error("Error publishing homework:", error);
@@ -107,7 +108,7 @@ export default function HomeworkCreate() {
     <Box sx={{ p: 4, bgcolor: "white", minHeight: "100%", fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 4 }}>
-        <IconButton onClick={() => navigate(-1)} size="small" sx={{ color: "#111827" }}>
+        <IconButton onClick={() => router.back()} size="small" sx={{ color: "#111827" }}>
           <KeyboardArrowLeft sx={{ fontSize: 24 }} />
         </IconButton>
         <Typography sx={{ fontSize: 20, fontWeight: 700, color: "#111827" }}>
@@ -244,7 +245,7 @@ export default function HomeworkCreate() {
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
           <Button
             variant="outlined"
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             sx={{
               textTransform: "none",
               color: "#6b7280",

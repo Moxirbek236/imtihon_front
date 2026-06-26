@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import {
   Box,
   Typography,
@@ -35,8 +35,10 @@ import {
 import axiosClient from "../api/axios";
 
 export default function GroupLesson() {
-  const { id, lessonId } = useParams(); // lessonId = "2026-05-12"
-  const navigate = useNavigate();
+  const params = useParams();
+  const id = params.id as string;
+  const lessonId = params.lessonId as string;
+  const router = useRouter();
 
   const [oneGroup, setOneGroup] = useState<any>(null);
   const [schedules, setSchedules] = useState({});
@@ -168,7 +170,7 @@ export default function GroupLesson() {
       setSnackbarOpen(true);
       return;
     }
-    navigate(`/dashboard/groups/${id}/lesson/${getFullDate(d)}`);
+    router.push(`/dashboard/groups/${id}/lesson/${getFullDate(d)}`);
   };
 
   const handleToggle = (studentId) => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
 import {
   Box,
@@ -20,8 +20,11 @@ import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
 
 export default function HomeworkCheck() {
-  const { id, homeworkId, studentId } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const id = params.id as string;
+  const homeworkId = params.homeworkId as string;
+  const studentId = params.studentId as string;
+  const router = useRouter();
   const [submission, setSubmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [grade, setGrade] = useState(60);
@@ -52,7 +55,7 @@ export default function HomeworkCheck() {
         comment: feedback || "Checked",
       });
       if (res.data?.success) {
-        navigate(-1);
+        router.back();
       }
     } catch (error) {
       console.error("Error submitting grade:", error);
@@ -80,7 +83,7 @@ export default function HomeworkCheck() {
         <Link 
           underline="hover" 
           color="inherit" 
-          onClick={() => navigate(-1)} 
+          onClick={() => router.back()} 
           sx={{ cursor: "pointer", fontSize: 18, fontWeight: 700, color: "#111827" }}
         >
           Kutayotganlar
@@ -227,7 +230,7 @@ export default function HomeworkCheck() {
       <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
         <Button 
           variant="outlined" 
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           sx={{ 
             textTransform: "none", borderRadius: 2.5, px: 4, py: 1.2, borderColor: "#e5e7eb", color: "#64748b",
             "&:hover": { borderColor: "#d1d5db", bgcolor: "#f9fafb" }

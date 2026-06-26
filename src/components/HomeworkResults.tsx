@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
 import {
   Box,
@@ -20,8 +20,10 @@ const tabs = [
 ];
 
 export default function HomeworkResults() {
-  const { id, homeworkId } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const id = params.id as string;
+  const homeworkId = params.homeworkId as string;
+  const router = useRouter();
   const [tabValue, setTabValue] = useState(0); // Default to Kutayotganlar
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,7 +90,7 @@ export default function HomeworkResults() {
     <Box sx={{ px: { xs: 2, lg: 3 }, py: 2, bgcolor: "white", minHeight: "100vh" }}>
       {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate(`/dashboard/groups/${id}?tab=1`)} size="small" sx={{ p: 0.5 }}>
+        <IconButton onClick={() => router.push(`/dashboard/groups/${id}?tab=1`)} size="small" sx={{ p: 0.5 }}>
             <ArrowBackIosNewIcon sx={{ fontSize: 14, color: "#111827", fontWeight: 700 }} />
           </IconButton>
           <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
