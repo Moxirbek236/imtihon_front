@@ -46,7 +46,7 @@ export default function GroupLesson() {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("warning");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("warning");
   const [saving, setSaving] = useState(false);
 
   // Lesson form state
