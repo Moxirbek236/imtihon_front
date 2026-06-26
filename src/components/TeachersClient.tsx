@@ -84,9 +84,19 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
   };
 
   useEffect(() => {
-    setTeachers(initialTeachers);
-    setTotalPages(initialPagination?.totalPages || 1);
-  }, [initialTeachers, initialPagination]);
+    async function fetchTeachers() {
+      try {
+        const res = await axiosClient.get(`/teachers?page=${page}&limit=10&search=${searchQuery}`);
+        if (res.data?.success) {
+          setTeachers(res.data.data || []);
+          setTotalPages(res.data.pagination?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error("O'qituvchilar yuklanmadi:", err);
+      }
+    }
+    fetchTeachers();
+  }, [page, searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

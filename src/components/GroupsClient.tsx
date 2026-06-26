@@ -219,9 +219,20 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
   }, [studentSearch, isStudentModalOpen]);
 
   useEffect(() => {
-    setGroups(initialGroups);
-    setTotalPages(initialPagination?.totalPages || 1);
-  }, [initialGroups, initialPagination]);
+    // Client-side fetch: server props bo'lmaganda o'zida fetch qiladi
+    async function fetchGroups() {
+      try {
+        const res = await axiosClient.get(`/groups/all?page=${page}&limit=10&search=${searchQuery}&status=${statusFilter || 'active'}`);
+        if (res.data?.success) {
+          setGroups(res.data.data || []);
+          setTotalPages(res.data.pagination?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error("Guruhlar yuklanmadi:", err);
+      }
+    }
+    fetchGroups();
+  }, [page, searchQuery, statusFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

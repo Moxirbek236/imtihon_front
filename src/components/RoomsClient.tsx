@@ -44,9 +44,19 @@ export default function RoomsClient({ initialRooms, initialPagination, searchPar
   const [search, setSearch] = useState(searchParams?.search || "");
 
   useEffect(() => {
-    setRooms(initialRooms);
-    setTotalPages(initialPagination?.totalPages || 1);
-  }, [initialRooms, initialPagination]);
+    async function fetchRooms() {
+      try {
+        const res = await axiosClient.get(`/rooms?limit=1000&page=${page}&search=${search}`);
+        if (res.data?.success) {
+          setRooms(res.data.data || []);
+          setTotalPages(res.data.pagination?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error("Xonalar yuklanmadi:", err);
+      }
+    }
+    fetchRooms();
+  }, [page, search]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -70,9 +70,19 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
   const [groupSearch, setGroupSearch] = useState("");
 
   useEffect(() => {
-    setStudents(initialStudents);
-    setTotalPages(initialPagination?.totalPages || 1);
-  }, [initialStudents, initialPagination]);
+    async function fetchStudents() {
+      try {
+        const res = await axiosClient.get(`/students/all?page=${page}&limit=10&search=${searchQuery}`);
+        if (res.data?.success) {
+          setStudents(res.data.data || []);
+          setTotalPages(res.data.pagination?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error("Talabalar yuklanmadi:", err);
+      }
+    }
+    fetchStudents();
+  }, [page, searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
