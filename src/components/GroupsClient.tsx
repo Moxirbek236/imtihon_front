@@ -26,6 +26,7 @@ import {
   Pagination,
   LinearProgress,
   Skeleton,
+  Select,
 } from "@mui/material";
 import {
   Add,
@@ -135,6 +136,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
   const [page, setPage] = useState(() => Number(urlSearchParams.get("page")) || initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
   const [searchQuery, setSearchQuery] = useState(() => urlSearchParams.get("search") || "");
+  const [currentStatus, setCurrentStatus] = useState(() => urlSearchParams.get("status") || statusFilter || "all");
   const [editId, setEditId] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -148,23 +150,11 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
 
   const displayedGroups = useMemo(() => {
     const arr = Array.isArray(groups) ? groups : [];
-    console.log("Groups before filter:", arr);
-    console.log("Status filter:", statusFilter, "Current role:", currentRole);
-    
-    if (currentRole === "TEACHER") {
-      if (statusFilter === "planned") {
-        const filtered = arr.filter(g => g.status === "planned");
-        console.log("Filtered by planned:", filtered);
-        return filtered;
-      } else {
-        const filtered = arr.filter(g => g.status === "active" || !g.status);
-        console.log("Filtered by active:", filtered);
-        return filtered;
-      }
+    if (currentStatus && currentStatus !== "all") {
+      return arr.filter(g => g.status === currentStatus);
     }
-    console.log("Returning all groups:", arr);
     return arr;
-  }, [groups, statusFilter, currentRole]);
+  }, [groups, currentStatus]);
 
 
 
@@ -246,7 +236,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
       const nextQuery = new URLSearchParams({
         page: String(page),
         search: searchQuery,
-        status: statusFilter || "active",
+        status: currentStatus,
       }).toString();
 
       if (urlSearchParams.toString() !== nextQuery) {
@@ -254,7 +244,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, searchQuery, statusFilter, router, urlSearchParams]);
+  }, [page, searchQuery, currentStatus, router, urlSearchParams]);
 
   const stats = useMemo(() => {
     const uniqueTeacherIds = new Set();
@@ -425,7 +415,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         }}
       >
         <Typography sx={{ fontSize: 30, fontWeight: 700, color: "#111827", letterSpacing: 0 }}>
-          {statusFilter === "planned" ? "Yig'ilayotgan guruhlar" : "Guruhlar"}
+          {currentStatus === "planned" ? "Yig'ilayotgan guruhlar" : "Guruhlar"}
         </Typography>
         <RoleGuard roles={["SUPERADMIN", "ADMIN"]}>
           <Button
@@ -452,44 +442,23 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.4 }}>
         <TextField
           size="small"
-          placeholder="Search groups..."
+          placeholder="Qidiruv..."
           value={searchQuery}
           onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-          sx={{ bgcolor: "white", borderRadius: 2, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+          sx={{ bgcolor: "white", borderRadius: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, height: 40 } }}
         />
-        <Button
-          variant="contained"
-          disableElevation
-          sx={{
-            minHeight: 33,
-            bgcolor: "white",
-            color: "#111827",
-            border: "1px solid #e5e7eb",
-            textTransform: "none",
-            fontSize: 12,
-            fontWeight: 700,
-            borderRadius: 1.5,
-            px: 1.6,
-            "&:hover": { bgcolor: "white" },
-          }}
+        <Select
+          size="small"
+          value={currentStatus}
+          onChange={(e) => { setCurrentStatus(e.target.value); setPage(1); }}
+          sx={{ bgcolor: "white", borderRadius: 2, minWidth: 140, height: 40, fontSize: 13, fontWeight: 600, color: "#111827", "& .MuiOutlinedInput-notchedOutline": { borderColor: "#e5e7eb" } }}
         >
-          Guruhlar
-        </Button>
-        <Button
-          startIcon={<ArchiveOutlined sx={{ fontSize: 17 }} />}
-          sx={{
-            minHeight: 33,
-            color: "#111827",
-            textTransform: "none",
-            fontSize: 12,
-            fontWeight: 600,
-            borderRadius: 1.5,
-            px: 1.1,
-            "&:hover": { bgcolor: "#ede9fe" },
-          }}
-        >
-          Arxiv
-        </Button>
+          <MenuItem value="all">Barchasi</MenuItem>
+          <MenuItem value="active">Faol</MenuItem>
+          <MenuItem value="planned">Kutilmoqda</MenuItem>
+          <MenuItem value="completed">Yakunlangan</MenuItem>
+          <MenuItem value="cancelled">Bekor qilingan</MenuItem>
+        </Select>
       </Box>
 
       {currentRole !== "TEACHER" && (
@@ -688,7 +657,20 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                     <Switch
                       size="small"
                       checked={group.status !== "planned"}
-                      inputProps={{ readOnly: true }}
+                      readOnly={currentRole === "TEACHER" || currentRole === "STUDENT"}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={async (e) => {
+                        if (currentRole === "TEACHER" || currentRole === "STUDENT") return;
+                        const newStatus = group.status === "planned" ? "active" : "planned";
+                        try {
+                          const res = await axiosClient.put(`/groups/${group.id}`, { status: newStatus });
+                          if (res.data?.success || res.status === 200) {
+                            setGroups(prev => prev.map(g => g.id === group.id ? { ...g, status: newStatus } : g));
+                          }
+                        } catch (err) {
+                          setAlert({ open: true, message: "Status o'zgartirishda xato!", severity: "error" });
+                        }
+                      }}
                       sx={{
                         width: 34,
                         height: 22,

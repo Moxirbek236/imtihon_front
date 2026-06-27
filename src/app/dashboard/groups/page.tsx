@@ -7,7 +7,7 @@ export default function Page() {
       <GroupsClient
         initialGroups={[]}
         initialPagination={{ totalPages: 1, currentPage: 1 }}
-        statusFilter="active"
+        statusFilter="all"
       />
     </Suspense>
   );
