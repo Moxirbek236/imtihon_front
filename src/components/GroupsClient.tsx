@@ -417,7 +417,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         <Typography sx={{ fontSize: 30, fontWeight: 700, color: "#111827", letterSpacing: 0 }}>
           {currentStatus === "planned" ? "Yig'ilayotgan guruhlar" : "Guruhlar"}
         </Typography>
-        <RoleGuard roles={["CREATOR", "SUPERADMIN", "ADMIN"]}>
+        <RoleGuard roles={["CREATO", "SUPERADMIN", "ADMIN"]}>
           <Button
             variant="contained"
             startIcon={<Add />}
