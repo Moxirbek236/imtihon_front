@@ -50,6 +50,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, [isPublicRoute, pathname, router]);
 
+  // Close management panel when navigating to non-management pages
+  useEffect(() => {
+    if (!pathname.startsWith("/management")) {
+      setManagementOpen(false);
+    }
+  }, [pathname]);
+
   if (!mounted) {
     return null;
   }
@@ -100,12 +107,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   };
 
-  // Close management panel when navigating to non-management pages
-  useEffect(() => {
-    if (!pathname.startsWith("/management")) {
-      setManagementOpen(false);
-    }
-  }, [pathname]);
+
 
   const handleSidebarToggle = () => {
     setSidebarCollapsed((prev) => !prev);
