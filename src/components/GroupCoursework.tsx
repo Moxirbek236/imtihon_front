@@ -100,13 +100,20 @@ export default function GroupCoursework() {
     handleMenuClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedVideo) {
       if (confirm(`Haqiqatan ham ushbu videoni o'chirmoqchimisiz?\n${selectedVideo.originalname || selectedVideo.video_url}`)) {
-        setFilesData((prev) => prev.filter((f) => f.id !== selectedVideo.id));
+        try {
+          await axiosClient.delete(`/videos/${selectedVideo.id}`);
+          queryClient.invalidateQueries({ queryKey: ["lessonVideos"] });
+        } catch (error) {
+          console.error("Xatolik:", error);
+        }
       }
     }
     handleMenuClose();
+  };
+
   const [expandedLessonId, setExpandedLessonId] = useState<number | null>(null);
   const { data: lessonVideosRes, isLoading: loadingVideos } = useQuery({
     queryKey: ["lessonVideos", expandedLessonId],
@@ -401,16 +408,16 @@ export default function GroupCoursework() {
                 </tr>
               </thead>
               <tbody>
-                {filesData.length === 0 ? (
+                {lessonVideosData.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ padding: "32px", textAlign: "center", color: "#94a3b8", fontSize: 14 }}>
                       Videolar yo'q
                     </td>
                   </tr>
                 ) : (
-                  filesData.map((file, idx) => (
+                  lessonVideosData.map((video, idx) => (
                     <tr
-                      key={file.id || idx}
+                      key={video.id || idx}
                       style={{
                         borderBottom: "1px solid #f3f4f6",
                         transition: "background-color 0.15s",
@@ -423,7 +430,7 @@ export default function GroupCoursework() {
                       {/* Video nomi - bosilganda modal ochiladi */}
                       <td style={{ padding: "16px" }}>
                         <Box
-                          onClick={() => handleFileClick(file)}
+                          onClick={() => handleFileClick(video)}
                           sx={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -436,12 +443,12 @@ export default function GroupCoursework() {
                           }}
                         >
                           <PlayCircleOutlined sx={{ fontSize: 18 }} />
-                          {file.originalname || file.video_url}
+                          {video.originalname || video.video_url}
                         </Box>
                       </td>
 
                       <td style={{ padding: "16px", fontSize: "13px", color: "#111827" }}>
-                        {file.lesson?.topic || "—"}
+                        {video.lesson?.topic || "—"}
                       </td>
 
                       <td style={{ padding: "16px", textAlign: "center" }}>
@@ -462,19 +469,19 @@ export default function GroupCoursework() {
                       </td>
 
                       <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563", textAlign: "center" }}>
-                        {file.lesson?.created_at ? formatDate(file.lesson.created_at) : "—"}
+                        {video.lesson?.created_at ? formatDate(video.lesson.created_at) : "—"}
                       </td>
 
                       <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563", textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
-                        {formatSize(file.size_mb)}
+                        {formatSize(video.size_mb)}
                       </td>
 
                       <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563", textAlign: "center" }}>
-                        {file.created_at ? formatDate(file.created_at) : "—"}
+                        {video.created_at ? formatDate(video.created_at) : "—"}
                       </td>
 
                       <td style={{ padding: "16px", textAlign: "right" }}>
-                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, file)}>
+                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, video)}>
                           <MoreVert sx={{ fontSize: 18, color: "#94a3b8" }} />
                         </IconButton>
                       </td>
