@@ -1,0 +1,20 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/dashboard/course/page": "/dashboard/course",
+  "/dashboard/groups/page": "/dashboard/groups",
+  "/dashboard/groups/[id]/page": "/dashboard/groups/[id]",
+  "/dashboard/my-groups/page": "/dashboard/my-groups",
+  "/dashboard/my-groups/[id]/page": "/dashboard/my-groups/[id]",
+  "/dashboard/teachers/page": "/dashboard/teachers",
+  "/dashboard/rooms/page": "/dashboard/rooms",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/students/page": "/dashboard/students",
+  "/management/course/page": "/management/course",
+  "/login/page": "/login",
+  "/forgot-password/page": "/forgot-password",
+  "/management/page": "/management",
+  "/management/rooms/page": "/management/rooms",
+  "/management/teachers/page": "/management/teachers",
+  "/page": "/",
+  "/dashboard/profile/page": "/dashboard/profile"
+}

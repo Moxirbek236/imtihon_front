@@ -65,7 +65,7 @@ export default function Login() {
     const parsed = loginSchema.safeParse({ phone: rawPhone, password });
     
     if (!parsed.success) {
-      const msg = parsed.error.errors[0].message;
+      const msg = parsed.error.issues[0].message;
       setError(msg);
       showAlert(msg, "error");
       return;

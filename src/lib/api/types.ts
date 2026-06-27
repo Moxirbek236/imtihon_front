@@ -1,6 +1,6 @@
 // Placeholder types
 
-export type Role = "superadmin" | "teacher" | "student";
+export type Role = "SUPERADMIN" | "ADMIN" | "TEACHER" | "STUDENT";
 
 export interface User {
   id: string;
