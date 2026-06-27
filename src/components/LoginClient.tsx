@@ -1,5 +1,12 @@
 "use client";
 
+import { z } from "zod";
+
+const loginSchema = z.object({
+  phone: z.string().regex(/^\+998\d{9}$/, "Telefon raqam noto'g'ri (Masalan: +998901234567)"),
+  password: z.string().min(1, "Parol kiritilishi shart")
+});
+
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -52,13 +59,6 @@ export default function Login() {
     if (reason === "clickaway") return;
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
-
-import { z } from "zod";
-
-const loginSchema = z.object({
-  phone: z.string().regex(/^\+998\d{9}$/, "Telefon raqam noto'g'ri (Masalan: +998901234567)"),
-  password: z.string().min(1, "Parol kiritilishi shart")
-});
 
   const handleSubmit = async () => {
     const rawPhone = login.replace(/[\s-]/g, "");
