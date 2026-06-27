@@ -1,9 +1,7 @@
 {
-  "/login/page": "app/login/page.js",
-  "/dashboard/teachers/page": "app/dashboard/teachers/page.js",
-  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/dashboard/groups/page": "app/dashboard/groups/page.js",
-  "/page": "app/page.js",
-  "/dashboard/students/page": "app/dashboard/students/page.js",
-  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js"
+  "/login/page": "app/login/page.js",
+  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js",
+  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js"
 }

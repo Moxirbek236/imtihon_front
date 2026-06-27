@@ -134,7 +134,7 @@ export default function GroupLesson() {
 
     async function fetchLessonData() {
       try {
-        const res = await axiosClient.get(`/attendances/by-date?group_id=${id}&date=${lessonId}`);
+        const res = await axiosClient.get(`/attendances/by-date?groupId=${id}&date=${lessonId}`);
         const data = res?.data?.data;
         if (data?.lesson) {
           setExistingLesson(data.lesson);
@@ -190,19 +190,16 @@ export default function GroupLesson() {
 
     setSaving(true);
     try {
-      const presentStudents = attendance
+      const presentStudentIds = attendance
         .filter(s => s.present)
-        .map(s => ({ student_id: s.student_id }));
+        .map(s => s.student_id);
 
       await axiosClient.post(`/attendances`, {
         group_id: Number(id),
         date: lessonId,
         topic: finalTopic,
         type: topicType,
-        records: attendance.map(s => ({
-          student_id: s.student_id,
-          present: s.present
-        }))
+        students: presentStudentIds
       });
 
       setSnackbarMsg("Dars va davomat muvaffaqiyatli saqlandi!");

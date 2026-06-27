@@ -137,18 +137,28 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
   const [currentRole, setCurrentRole] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrentRole(localStorage.getItem("role"));
+    const role = localStorage.getItem("role");
+    console.log("Role from localStorage:", role);
+    setCurrentRole(role);
   }, []);
 
   const displayedGroups = useMemo(() => {
     const arr = Array.isArray(groups) ? groups : [];
+    console.log("Groups before filter:", arr);
+    console.log("Status filter:", statusFilter, "Current role:", currentRole);
+    
     if (currentRole === "TEACHER") {
       if (statusFilter === "planned") {
-        return arr.filter(g => g.status === "planned");
+        const filtered = arr.filter(g => g.status === "planned");
+        console.log("Filtered by planned:", filtered);
+        return filtered;
       } else {
-        return arr.filter(g => g.status === "active" || !g.status);
+        const filtered = arr.filter(g => g.status === "active" || !g.status);
+        console.log("Filtered by active:", filtered);
+        return filtered;
       }
     }
+    console.log("Returning all groups:", arr);
     return arr;
   }, [groups, statusFilter, currentRole]);
 
@@ -223,17 +233,57 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
     // Client-side fetch: server props bo'lmaganda o'zida fetch qiladi
     async function fetchGroups() {
       try {
-        const res = await axiosClient.get(`/groups/all?page=${page}&limit=10`);
+        const role = currentRole?.toUpperCase();
+        let endpoint;
+        
+        // Role-based endpoint routing
+        if (role === "TEACHER") {
+          endpoint = "/teachers/my/groups";
+        } else if (role === "STUDENT") {
+          endpoint = "/students/my/groups";
+        } else {
+          // SUPERADMIN or ADMIN
+          endpoint = `/groups?page=${page}&limit=10`;
+        }
+        
+        console.log("Current role:", currentRole, "Endpoint:", endpoint);
+        const res = await axiosClient.get(endpoint);
+        console.log("API Response:", res.data);
+        
         if (res.data?.success) {
-          setGroups(res.data.data || []);
+          const rawData = res.data.data || [];
+          console.log("Raw data:", rawData);
+          
+          // Map API response to frontend structure based on role
+          const mappedData = rawData.map((group) => {
+            if (role === "TEACHER" || role === "STUDENT") {
+              // Teacher/Student API returns different structure
+              return {
+                ...group,
+                course: {
+                  name: group.course,
+                  duration_month: group.course_duration
+                },
+                teachers: group.teachers || [],
+                student_count: group.students || 0
+              };
+            }
+            return group;
+          });
+          
+          console.log("Mapped data:", mappedData);
+          setGroups(mappedData);
           setTotalPages(res.data.pagination?.totalPages || 1);
         }
       } catch (err) {
         console.error("Guruhlar yuklanmadi:", err);
       }
     }
-    fetchGroups();
-  }, [page, searchQuery, statusFilter]);
+    // Only fetch if currentRole is set
+    if (currentRole !== null) {
+      fetchGroups();
+    }
+  }, [page, searchQuery, statusFilter, currentRole]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

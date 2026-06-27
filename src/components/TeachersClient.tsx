@@ -115,7 +115,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await axiosClient.get(`/groups/all?search=${groupSearch.trim()}`);
+        const res = await axiosClient.get(`/groups?search=${groupSearch.trim()}`);
         if(res?.data?.success) setAllGroups(res.data.data);
       } catch (error) {
         console.error("Guruhlar yuklanmadi:", error);
