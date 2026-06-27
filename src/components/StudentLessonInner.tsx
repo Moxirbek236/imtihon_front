@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, CircularProgress, TextField, IconButton } from "@mui/material";
+import { Box, Typography, CircularProgress, TextField, IconButton, Collapse } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
@@ -9,6 +9,9 @@ import SendIcon from "@mui/icons-material/Send";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ClearIcon from "@mui/icons-material/Clear";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 
 const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
 
@@ -218,23 +221,15 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
       {/* ── SIDEBAR (Right) ── */}
       <Box sx={{ width: { xs: "100%", md: 300 }, flexShrink: 0, p: 2, overflowY: "auto", borderLeft: "1px solid #e5e7eb", bgcolor: "white" }}>
         {sidebarLessons.map((l: any) => (
-          <Box
+          <SidebarLessonItem
             key={l.id}
-            onClick={() => router.push(`/dashboard/my-groups/${groupId}/lessons/${l.id}`)}
-            sx={{
-              p: 2,
-              mb: 1.5,
-              borderRadius: 2,
-              bgcolor: l.id === Number(lessonId) ? "#fef3c7" : "#fafaf9",
-              border: l.id === Number(lessonId) ? "1px solid #f59e0b" : "1px solid #e7e5e4",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              "&:hover": { bgcolor: "#fef3c7" }
-            }}
-          >
-            <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#292524", mb: 0.5 }}>{l.topic}</Typography>
-            <Typography sx={{ fontSize: 12, color: "#78716c" }}>Dars sanasi: {l.dueDate || "-"}</Typography>
-          </Box>
+            lesson={l}
+            groupId={groupId}
+            isActive={l.id === Number(lessonId)}
+            currentVideo={currentVideo}
+            setCurrentVideo={setCurrentVideo}
+            router={router}
+          />
         ))}
       </Box>
     </Box>
@@ -273,6 +268,109 @@ function SubmissionInput({ comment, setComment, selectedFiles, handleFileChange,
           </IconButton>
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrentVideo, router }: any) {
+  const [expanded, setExpanded] = useState(isActive);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isActive) {
+      setExpanded(true);
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    if (expanded && lesson.hasVideo && videos.length === 0) {
+      setLoading(true);
+      axiosClient.get(`/videos?lessonId=${lesson.id}`)
+        .then((res) => {
+          setVideos(res.data?.data || []);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [expanded, lesson.hasVideo, lesson.id]);
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent navigation
+    if (!isActive) {
+      router.push(`/dashboard/my-groups/${groupId}/lessons/${lesson.id}`);
+    } else {
+      setExpanded(!expanded);
+    }
+  };
+
+  return (
+    <Box sx={{ mb: 1.5 }}>
+      <Box
+        onClick={toggleExpand}
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          bgcolor: isActive ? "#fde68a" : "#fafaf9", // Active style from screenshot (orange-ish)
+          border: isActive ? "1px solid #f59e0b" : "1px solid #e7e5e4",
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          transition: "all 0.2s",
+          "&:hover": { bgcolor: isActive ? "#fde68a" : "#fef3c7" },
+        }}
+      >
+        <Box>
+          <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#292524", mb: 0.5 }}>{lesson.topic || lesson.name}</Typography>
+          <Typography sx={{ fontSize: 12, color: "#78716c" }}>Dars sanasi: {lesson.dueDate || "-"}</Typography>
+        </Box>
+        {lesson.hasVideo && (
+          <ExpandMoreIcon sx={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "0.3s", color: "#6b7280" }} />
+        )}
+      </Box>
+
+      <Collapse in={expanded}>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+            <CircularProgress size={20} sx={{ color: "#d97706" }} />
+          </Box>
+        ) : (
+          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+            {videos.map((vid, idx) => {
+              const isSelected = currentVideo?.id === vid.id;
+              return (
+                <Box
+                  key={vid.id}
+                  onClick={() => setCurrentVideo(vid)}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: isSelected ? "#fcd34d" : "#fef3c7",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    transition: "0.2s",
+                    "&:hover": { bgcolor: "#fcd34d" }
+                  }}
+                >
+                  {isSelected ? (
+                    <RadioButtonCheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
+                  ) : (
+                    <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
+                  )}
+                  <Typography sx={{ fontSize: 13, color: "#4b5563" }}>
+                    {idx + 1}-video: {vid.originalname || vid.video_url}
+                  </Typography>
+                </Box>
+              );
+            })}
+            {videos.length === 0 && lesson.hasVideo && (
+              <Typography sx={{ fontSize: 12, color: "#9ca3af", ml: 2, mt: 1 }}>Videolar topilmadi</Typography>
+            )}
+          </Box>
+        )}
+      </Collapse>
     </Box>
   );
 }
