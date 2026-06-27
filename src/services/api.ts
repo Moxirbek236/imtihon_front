@@ -25,11 +25,11 @@ export const groupsApi = {
 export const lessonsApi = {
   list: (groupId: string, role: Role | null) => {
     if (role === 'STUDENT') return axiosClient.get(`/students/my/group/${groupId}/lessons`).then(unwrap);
-    return axiosClient.get(`/lessson?groupId=${groupId}`).then(unwrap); // TEACHER and ADMIN use lessson
+    return axiosClient.get(`/lesson?groupId=${groupId}`).then(unwrap); // TEACHER and ADMIN use lesson
   },
-  create: (data: any) => axiosClient.post('/lessson', data).then(unwrap),
-  update: (id: string, data: any) => axiosClient.put(`/lessson/${id}`, data).then(unwrap),
-  delete: (id: string) => axiosClient.delete(`/lessson/${id}`).then(unwrap)
+  create: (data: any) => axiosClient.post('/lesson', data).then(unwrap),
+  update: (id: string, data: any) => axiosClient.put(`/lesson/${id}`, data).then(unwrap),
+  delete: (id: string) => axiosClient.delete(`/lesson/${id}`).then(unwrap)
 };
 
 export const attendancesApi = {
@@ -68,9 +68,6 @@ export const videosApi = {
 
 export const profileApi = {
   get: (role: Role | null) => {
-    let url = '/auth/profile';
-    if (role === 'TEACHER') url = '/teachers/my/profile';
-    else if (role === 'STUDENT') url = '/students/my/profile';
-    return axiosClient.get(url).then(unwrap);
+    return axiosClient.get('/auth/profile').then(unwrap);
   }
 };

@@ -16,6 +16,8 @@ export default function Page() {
     }
   }, [role, router]);
 
+  if (!role) return null;
+
   if (role === "STUDENT") {
     return <StudentDashboardHome />;
   }

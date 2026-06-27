@@ -28,6 +28,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const token = localStorage.getItem("token");
     if (!token) {
       router.replace("/login");
+      return;
+    }
+
+    const role = localStorage.getItem("role");
+
+    if (role === "STUDENT") {
+      const allowedStudentRoutes = ["/dashboard", "/dashboard/my-groups", "/dashboard/payments", "/dashboard/metrics", "/dashboard/rating", "/dashboard/shop", "/dashboard/settings"];
+      const isAllowed = allowedStudentRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+      if (!isAllowed) {
+        router.replace("/dashboard/my-groups");
+        return;
+      }
+    } else if (role === "TEACHER") {
+      const allowedTeacherRoutes = ["/dashboard", "/dashboard/my-groups", "/dashboard/students", "/dashboard/rating", "/dashboard/settings", "/dashboard/groups"];
+      const isAllowed = allowedTeacherRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+      if (!isAllowed) {
+        router.replace("/dashboard/my-groups");
+        return;
+      }
     }
   }, [isPublicRoute, pathname, router]);
 

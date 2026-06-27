@@ -11,7 +11,10 @@ export function Providers({ children }: { children: ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 30 * 1000,
-            retry: 1,
+            retry: (failureCount, error: any) => {
+              if (error?.response?.status === 403 || error?.response?.status === 404) return false;
+              return failureCount < 1;
+            },
             refetchOnWindowFocus: false,
           },
         },

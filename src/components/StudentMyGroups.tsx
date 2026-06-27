@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
 
 export default function StudentMyGroups() {
-  const [tabValue, setTabValue] = useState(0);
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const [tabValue, setTabValue] = useState(searchParams?.get("status") === "finished" ? 1 : 0);
   const [activeGroups, setActiveGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function StudentMyGroups() {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    router.replace(`?status=${newValue === 1 ? 'finished' : 'active'}`);
   };
 
   useEffect(() => {

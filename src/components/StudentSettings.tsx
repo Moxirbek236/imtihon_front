@@ -31,7 +31,7 @@ export default function StudentSettings() {
   async function fetchProfile() {
     setLoading(true);
     try {
-      const res = await axiosClient.get("/students/my/profile");
+      const res = await axiosClient.get("/auth/profile");
       if (res.data?.success) {
         setProfile(res.data.data);
         setFullName(res.data.data.full_name);
@@ -48,7 +48,7 @@ export default function StudentSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await axiosClient.put("/students/my/profile", {
+      const res = await axiosClient.put("/auth/profile", {
         full_name: fullName,
         address: address,
       });

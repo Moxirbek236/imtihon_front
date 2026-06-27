@@ -341,11 +341,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
   if (role === "STUDENT") {
     const studentNavItems = [
       { label: "Bosh sahifa", icon: <Home />, id: "home" },
-      { label: "To'lovlarim", icon: <CreditCard />, id: "payments" },
       { label: "Guruhlarim", icon: <Groups />, id: "my-groups" },
-      { label: "Ko'rsatkichlarim", icon: <BarChart />, id: "metrics" },
-      { label: "Reyting", icon: <Equalizer />, id: "rating" },
-      { label: "Do'kon", icon: <ShoppingCart />, id: "shop" },
       { label: "Sozlamalar", icon: <Settings />, id: "settings" },
     ];
 
@@ -603,34 +599,7 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
         ))}
       </List>
 
-      {/* Subscription Box */}
-      <Collapse in={!collapsed} timeout={300}>
-        <Box sx={{ m: 1.5, p: 1.5, bgcolor: "#fff5f5", border: "1px solid #fecaca", borderRadius: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <Box sx={{ fontSize: 28 }}>🔔</Box>
-            <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Obuna</Typography>
-              <Typography sx={{ fontSize: 11, color: "#ef4444" }}>Obunangiz tugagan</Typography>
-            </Box>
-          </Box>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<Refresh />}
-            sx={{
-              bgcolor: "#ef4444",
-              "&:hover": { bgcolor: "#dc2626" },
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 13,
-              borderRadius: 2,
-              py: 0.8,
-            }}
-          >
-            Obunani yangilash
-          </Button>
-        </Box>
-      </Collapse>
+
     </Box>
   );
 }

@@ -49,7 +49,7 @@ axiosClient.interceptors.response.use(
     }
 
     if (error.response?.status === 403) {
-      toast.error("Sizda ruxsat yo'q");
+      toast.error("Sizda ruxsat yo'q", { id: '403-error' });
     }
 
     if (shouldForceLogin(error)) {
