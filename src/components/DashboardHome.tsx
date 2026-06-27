@@ -23,6 +23,7 @@ import {
   ExpandMore,
   FiberManualRecord,
 } from "@mui/icons-material";
+import { useQuery } from "@tanstack/react-query";
 import axiosClient from "../api/axios";
 import AdminTimetable from "./AdminTimetable";
 
@@ -76,21 +77,16 @@ function AccordionSection({ title, children }) {
 }
 
 export default function DashboardHome() {
-  const [data, setData] = useState<any>(null);
+  const { data: response } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const res = await axiosClient.get("/dashboard/stats");
+      return res.data;
+    },
+    staleTime: 60000,
+  });
 
-  useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        const res = await axiosClient.get("/dashboard/stats");
-        if (res.data?.success) {
-          setData(res.data.data);
-        }
-      } catch (error) {
-        console.error("Dashboard datasi yuklanmadi", error);
-      }
-    }
-    fetchDashboard();
-  }, []);
+  const data = response?.data;
 
   const stats = [
     { label: "O'quvchilar", value: data?.students || 0, icon: <School />, color: "#7c3aed" },

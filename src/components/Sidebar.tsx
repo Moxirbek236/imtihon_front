@@ -346,7 +346,6 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
       { label: "Ko'rsatkichlarim", icon: <BarChart />, id: "metrics" },
       { label: "Reyting", icon: <Equalizer />, id: "rating" },
       { label: "Do'kon", icon: <ShoppingCart />, id: "shop" },
-      { label: "Qo'shimcha darslar", icon: <OnlinePrediction />, id: "additional-lessons" },
       { label: "Sozlamalar", icon: <Settings />, id: "settings" },
     ];
 

@@ -15,6 +15,7 @@ import {
   Chip,
   Tooltip
 } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import axiosClient from "../api/axios";
 
 // Standard time slots for the CRM
@@ -29,28 +30,27 @@ const TIME_SLOTS = [
 ];
 
 export default function AdminTimetable() {
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [groups, setGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: roomsRes, isLoading: loadingRooms } = useQuery({
+    queryKey: ["rooms", "schedule"],
+    queryFn: async () => {
+      const res = await axiosClient.get("/rooms");
+      return res.data;
+    },
+    staleTime: 60000,
+  });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [roomsRes, groupsRes] = await Promise.all([
-          axiosClient.get("/rooms"),
-          axiosClient.get("/groups?limit=1000")
-        ]);
+  const { data: groupsRes, isLoading: loadingGroups } = useQuery({
+    queryKey: ["groups", "schedule"],
+    queryFn: async () => {
+      const res = await axiosClient.get("/groups?limit=1000");
+      return res.data;
+    },
+    staleTime: 60000,
+  });
 
-        if (roomsRes.data?.success) setRooms(roomsRes.data.data);
-        if (groupsRes.data?.success) setGroups(groupsRes.data.data);
-      } catch (error) {
-        console.error("Failed to load timetable data", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+  const loading = loadingRooms || loadingGroups;
+  const rooms = roomsRes?.data || [];
+  const groups = groupsRes?.data || [];
 
   if (loading) {
     return (

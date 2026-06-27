@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import VideoUploadModal from "./VideoUploadModal";
 import {
   Box,
@@ -28,9 +29,50 @@ import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 export default function GroupCoursework() {
   const { id } = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [subTabValue, setSubTabValue] = useState(0);
-  const [homeworkData, setHomeworkData] = useState<any[]>([]);
-  const [filesData, setFilesData] = useState<any[]>([]);
+
+  // Queries
+  const { data: lessonsRes, isLoading: loadingLessons } = useQuery({
+    queryKey: ["lessons", id],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/lessson?groupId=${id}`);
+      return res.data;
+    },
+    enabled: subTabValue === 0,
+  });
+
+  const { data: homeworkRes, isLoading: loadingHomework } = useQuery({
+    queryKey: ["homeworks", id],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/home-works/group/${id}`);
+      return res.data;
+    },
+    enabled: subTabValue === 1,
+  });
+
+  const { data: attendanceRes, isLoading: loadingAttendance } = useQuery({
+    queryKey: ["attendances", id],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/attendances?groupId=${id}`);
+      return res.data;
+    },
+    enabled: subTabValue === 2,
+  });
+
+  const { data: examsRes, isLoading: loadingExams } = useQuery({
+    queryKey: ["exams", id],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/exams/group/${id}`);
+      return res.data;
+    },
+    enabled: subTabValue === 3,
+  });
+
+  const lessonsData = lessonsRes?.data || [];
+  const homeworkData = homeworkRes?.data || [];
+  const attendanceData = attendanceRes?.data || [];
+  const examsData = examsRes?.data || [];
 
   // Video watch modal
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -65,35 +107,16 @@ export default function GroupCoursework() {
       }
     }
     handleMenuClose();
-  };
-
-  useEffect(() => {
-    async function fetchHomework() {
-      try {
-        const res = await axiosClient.get(`/home-works/group/${id}`);
-        if (res.data?.success) {
-          setHomeworkData(res.data.data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching homework:", error);
-      }
-    }
-    fetchHomework();
-  }, [id]);
-
-  const fetchFiles = useCallback(async () => {
-    try {
-      const res = await axiosClient.get(`/files/${id}`);
-      const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-      setFilesData(data);
-    } catch (error) {
-      console.error("Error fetching files:", error);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (subTabValue === 1) fetchFiles();
-  }, [subTabValue, fetchFiles]);
+  const [expandedLessonId, setExpandedLessonId] = useState<number | null>(null);
+  const { data: lessonVideosRes, isLoading: loadingVideos } = useQuery({
+    queryKey: ["lessonVideos", expandedLessonId],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/videos?lessonId=${expandedLessonId}`);
+      return res.data;
+    },
+    enabled: !!expandedLessonId,
+  });
+  const lessonVideosData = lessonVideosRes?.data || [];
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -148,7 +171,7 @@ export default function GroupCoursework() {
           </Typography>
 
           <Box sx={{ display: "flex", bgcolor: "#f3f4f6", p: 0.5, borderRadius: 2, gap: 0.5 }}>
-            {["Uyga vazifa", "Videolar", "Imtihonlar", "Jurnal"].map((label, idx) => (
+            {["Darslar", "Uy ishlari", "Davomat", "Imtihonlar"].map((label, idx) => (
               <Button
                 key={idx}
                 onClick={() => setSubTabValue(idx)}
@@ -200,12 +223,91 @@ export default function GroupCoursework() {
           open={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
           groupId={id}
-          onSuccess={() => fetchFiles()}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["lessons", id] });
+            queryClient.invalidateQueries({ queryKey: ["lessonVideos"] });
+          }}
         />
       </Box>
 
-      {/* ===== UYGA VAZIFA ===== */}
+      {/* ===== DARSLAR ===== */}
       {subTabValue === 0 && (
+        <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "transparent" }}>
+          {loadingLessons ? (
+            <Typography sx={{ p: 4, textAlign: "center", color: "#6b7280" }}>Yuklanmoqda...</Typography>
+          ) : lessonsData.length === 0 ? (
+            <Typography sx={{ p: 4, textAlign: "center", color: "#6b7280", bgcolor: "white", borderRadius: 3 }}>
+              Darslar mavjud emas
+            </Typography>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {lessonsData.map((lesson: any, idx: number) => (
+                <Paper key={lesson.id || idx} sx={{ p: 2, borderRadius: 3, border: "1px solid #e5e7eb", boxShadow: "none" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box>
+                      <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
+                        {idx + 1}. {lesson.topic || "Mavzusiz"}
+                      </Typography>
+                      <Typography sx={{ fontSize: 13, color: "#6b7280", mt: 0.5 }}>
+                        Sana: {formatDate(lesson.date)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                      {lesson.hasVideo && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => setExpandedLessonId(expandedLessonId === lesson.id ? null : lesson.id)}
+                          sx={{ textTransform: "none", borderRadius: 2 }}
+                        >
+                          {expandedLessonId === lesson.id ? "Videolarni yopish" : "Videolarni ko'rish"}
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                  
+                  {expandedLessonId === lesson.id && lesson.hasVideo && (
+                    <Box sx={{ mt: 2, p: 2, bgcolor: "#f9fafb", borderRadius: 2, border: "1px solid #f3f4f6" }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 1 }}>Videolar:</Typography>
+                      {loadingVideos ? (
+                        <Typography sx={{ fontSize: 13, color: "#6b7280" }}>Yuklanmoqda...</Typography>
+                      ) : lessonVideosData.length === 0 ? (
+                        <Typography sx={{ fontSize: 13, color: "#6b7280" }}>Video topilmadi</Typography>
+                      ) : (
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                          {lessonVideosData.map((video: any, vIdx: number) => (
+                            <Box
+                              key={video.id || vIdx}
+                              onClick={() => handleFileClick(video)}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                p: 1,
+                                bgcolor: "white",
+                                borderRadius: 1,
+                                cursor: "pointer",
+                                "&:hover": { bgcolor: "#f3f4f6" }
+                              }}
+                            >
+                              <PlayCircleOutlined sx={{ fontSize: 18, color: "#3b82f6" }} />
+                              <Typography sx={{ fontSize: 13, color: "#3b82f6", fontWeight: 500 }}>
+                                {video.originalname || video.video_url}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  )}
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </Paper>
+      )}
+      {/* ===== UYGA VAZIFA ===== */}
+      {subTabValue === 1 && (
         <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
           <Box sx={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -385,12 +487,113 @@ export default function GroupCoursework() {
         </Paper>
       )}
 
-      {/* ===== IMTIHONLAR & JURNAL (placeholder) ===== */}
-      {(subTabValue === 2 || subTabValue === 3) && (
-        <Paper sx={{ p: 6, textAlign: "center", borderRadius: 3, boxShadow: "none", border: "1px solid #f3f4f6" }}>
-          <Typography sx={{ color: "#94a3b8", fontSize: 14 }}>
-            {subTabValue === 2 ? "Imtihonlar" : "Jurnal"} bo'limi hali tayyor emas
-          </Typography>
+      {/* ===== DAVOMAT ===== */}
+      {subTabValue === 2 && (
+        <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
+          <Box sx={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>#</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>Dars Sana</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>O'quvchi</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600, textAlign: "center" }}>Holati</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingAttendance ? (
+                  <tr><td colSpan={4} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Yuklanmoqda...</td></tr>
+                ) : attendanceData.length === 0 ? (
+                  <tr><td colSpan={4} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Davomat yo'q</td></tr>
+                ) : (
+                  attendanceData.map((row: any, idx: number) => (
+                    <tr key={row.id || idx} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "16px", fontSize: "13px" }}>{idx + 1}</td>
+                      <td style={{ padding: "16px", fontSize: "13px" }}>{formatDate(row.date)}</td>
+                      <td style={{ padding: "16px", fontSize: "13px" }}>{row.student?.full_name}</td>
+                      <td style={{ padding: "16px", fontSize: "13px", textAlign: "center" }}>
+                        <span style={{
+                          padding: "4px 8px", borderRadius: "12px", fontSize: "12px",
+                          backgroundColor: row.status === 'present' ? '#dcfce7' : '#fee2e2',
+                          color: row.status === 'present' ? '#16a34a' : '#ef4444'
+                        }}>
+                          {row.status === 'present' ? 'Kelgan' : 'Kelmagan'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </Box>
+        </Paper>
+      )}
+
+      {/* ===== IMTIHONLAR ===== */}
+      {subTabValue === 3 && (
+        <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
+          <Box sx={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>#</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>Sarlavha</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>Boshlanish vaqti</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>Tugash vaqti</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600, textAlign: "center" }}>Holati</th>
+                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600, textAlign: "center" }}>Amallar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingExams ? (
+                  <tr><td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Yuklanmoqda...</td></tr>
+                ) : examsData.length === 0 ? (
+                  <tr><td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Imtihonlar mavjud emas</td></tr>
+                ) : (
+                  examsData.map((exam: any, idx: number) => (
+                    <tr key={exam.id || idx} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563" }}>{idx + 1}</td>
+                      <td style={{ padding: "16px", fontSize: "13px", fontWeight: 500, color: "#111827" }}>{exam.title}</td>
+                      <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563" }}>
+                        {formatDate(exam.start_date)} {formatTime(exam.start_date)}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563" }}>
+                        {formatDate(exam.end_date)} {formatTime(exam.end_date)}
+                      </td>
+                      <td style={{ padding: "16px", textAlign: "center" }}>
+                        <span style={{
+                          padding: "4px 8px", borderRadius: "12px", fontSize: "12px",
+                          backgroundColor: exam.is_published ? '#dcfce7' : '#fef9c3',
+                          color: exam.is_published ? '#16a34a' : '#ca8a04'
+                        }}>
+                          {exam.is_published ? 'Elon qilingan' : 'Kutilmoqda'}
+                        </span>
+                      </td>
+                      <td style={{ padding: "16px", textAlign: "center" }}>
+                        {!exam.is_published && (
+                          <Button 
+                            variant="outlined" 
+                            size="small" 
+                            sx={{ textTransform: "none" }}
+                            onClick={async () => {
+                              try {
+                                await axiosClient.post(`/exams/${exam.id}/publish`);
+                                queryClient.invalidateQueries({ queryKey: ["exams", id] });
+                              } catch (e) {
+                                console.error(e);
+                              }
+                            }}
+                          >
+                            E'lon qilish
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </Box>
         </Paper>
       )}
 

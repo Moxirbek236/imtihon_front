@@ -1,18 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import DashboardHome from "../../components/DashboardHome";
 import StudentDashboardHome from "../../components/StudentDashboardHome";
+import { useAuthContext } from "@/lib/auth-provider";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const [role, setRole] = useState<string | null>(null);
+  const { role } = useAuthContext();
+  const router = useRouter();
 
   useEffect(() => {
-    setRole(localStorage.getItem("role"));
-  }, []);
+    if (role === "TEACHER") {
+      router.replace("/dashboard/my-groups");
+    }
+  }, [role, router]);
 
   if (role === "STUDENT") {
     return <StudentDashboardHome />;
+  }
+
+  if (role === "TEACHER") {
+    return null; // redirecting
   }
 
   return <DashboardHome />;

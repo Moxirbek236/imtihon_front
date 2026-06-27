@@ -11,6 +11,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname === "/";
 
   useEffect(() => {
+    setMounted(true);
     if (isPublicRoute) return;
 
     const token = localStorage.getItem("token");
@@ -28,6 +30,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       router.replace("/login");
     }
   }, [isPublicRoute, pathname, router]);
+
+  if (!mounted) {
+    return null;
+  }
 
   // Determine active sidebar item from URL
   let activeItem = "home";

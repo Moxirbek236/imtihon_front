@@ -158,14 +158,11 @@ export default function StudentMyGroups() {
                     <Typography sx={{ fontSize: 13, color: "#111827" }}>{index + 1}</Typography>
                     <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.name}</Typography>
                     <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.course}</Typography>
-                    <Box>
-                      <Avatar 
-                        onClick={(e) => { e.stopPropagation(); handleOpenTeachers(group); }}
-                        sx={{ width: 26, height: 26, bgcolor: "#cd9869", fontSize: 12, cursor: "pointer", "&:hover": { opacity: 0.9 } }}
-                      >
-                        {group.teachers_count}
-                      </Avatar>
-                    </Box>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563" }}>
+                      {group.teachers && group.teachers.length > 0
+                        ? group.teachers.map((t: any) => t.full_name).join(", ")
+                        : "-"}
+                    </Typography>
                     <Typography sx={{ fontSize: 13, color: "#111827" }}>{formatDate(group.start_date)}</Typography>
                   </Box>
                 ))}

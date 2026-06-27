@@ -1,8 +1,12 @@
 {
-  "/dashboard/rating/page": "app/dashboard/rating/page.js",
+  "/dashboard/groups/[id]/homework/[hwId]/results/page": "app/dashboard/groups/[id]/homework/[hwId]/results/page.js",
+  "/dashboard/groups/[id]/homework/create/page": "app/dashboard/groups/[id]/homework/create/page.js",
+  "/dashboard/groups/[id]/lesson/[lessonId]/page": "app/dashboard/groups/[id]/lesson/[lessonId]/page.js",
+  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
+  "/dashboard/groups/page": "app/dashboard/groups/page.js",
+  "/dashboard/my-groups/[id]/lessons/[lessonId]/page": "app/dashboard/my-groups/[id]/lessons/[lessonId]/page.js",
+  "/dashboard/my-groups/[id]/page": "app/dashboard/my-groups/[id]/page.js",
+  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js",
   "/dashboard/students/page": "app/dashboard/students/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/management/rooms/page": "app/management/rooms/page.js",
-  "/management/course/page": "app/management/course/page.js",
-  "/dashboard/gifts/page": "app/dashboard/gifts/page.js"
+  "/login/page": "app/login/page.js"
 }
