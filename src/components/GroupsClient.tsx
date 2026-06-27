@@ -24,6 +24,8 @@ import {
   Snackbar,
   Alert,
   Pagination,
+  LinearProgress,
+  Skeleton,
 } from "@mui/material";
 import {
   Add,
@@ -41,6 +43,8 @@ import {
   Edit,
 } from "@mui/icons-material";
 import axiosClient from "../api/axios";
+import { useGroups } from "@/hooks/queries";
+import RoleGuard from "@/components/RoleGuard";
 
 const dayOptions = [
   { label: "Dushanba", value: "Monday", short: "Du" },
@@ -229,61 +233,13 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
     return () => clearTimeout(timer);
   }, [studentSearch, isStudentModalOpen]);
 
+  const { data: fetchedGroups, isLoading, error } = useGroups();
+
   useEffect(() => {
-    // Client-side fetch: server props bo'lmaganda o'zida fetch qiladi
-    async function fetchGroups() {
-      try {
-        const role = currentRole?.toUpperCase();
-        let endpoint;
-        
-        // Role-based endpoint routing
-        if (role === "TEACHER") {
-          endpoint = "/teachers/my/groups";
-        } else if (role === "STUDENT") {
-          endpoint = "/students/my/groups";
-        } else {
-          // SUPERADMIN or ADMIN
-          endpoint = `/groups?page=${page}&limit=10`;
-        }
-        
-        console.log("Current role:", currentRole, "Endpoint:", endpoint);
-        const res = await axiosClient.get(endpoint);
-        console.log("API Response:", res.data);
-        
-        if (res.data?.success) {
-          const rawData = res.data.data || [];
-          console.log("Raw data:", rawData);
-          
-          // Map API response to frontend structure based on role
-          const mappedData = rawData.map((group) => {
-            if (role === "TEACHER" || role === "STUDENT") {
-              // Teacher/Student API returns different structure
-              return {
-                ...group,
-                course: {
-                  name: group.course,
-                  duration_month: group.course_duration
-                },
-                teachers: group.teachers || [],
-                student_count: group.students || 0
-              };
-            }
-            return group;
-          });
-          
-          console.log("Mapped data:", mappedData);
-          setGroups(mappedData);
-          setTotalPages(res.data.pagination?.totalPages || 1);
-        }
-      } catch (err) {
-        console.error("Guruhlar yuklanmadi:", err);
-      }
+    if (fetchedGroups) {
+      setGroups(fetchedGroups);
     }
-    // Only fetch if currentRole is set
-    if (currentRole !== null) {
-      fetchGroups();
-    }
-  }, [page, searchQuery, statusFilter, currentRole]);
+  }, [fetchedGroups]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -471,7 +427,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         <Typography sx={{ fontSize: 30, fontWeight: 700, color: "#111827", letterSpacing: 0 }}>
           {statusFilter === "planned" ? "Yig'ilayotgan guruhlar" : "Guruhlar"}
         </Typography>
-        {currentRole !== "TEACHER" && (
+        <RoleGuard allowedRoles={["SUPERADMIN", "ADMIN"]}>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -490,7 +446,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
           >
             Guruh qo'shish
           </Button>
-        )}
+        </RoleGuard>
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.4 }}>
@@ -682,7 +638,37 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
               </IconButton>
             </Box>
 
-            {displayedGroups.map((group) => {
+            {isLoading && (
+              <Box sx={{ width: "100%", position: "relative" }}>
+                <LinearProgress sx={{ position: "absolute", top: 0, left: 0, width: "100%", bgcolor: "#d1fae5", "& .MuiLinearProgress-bar": { bgcolor: "#10b981" } }} />
+                {[...Array(5)].map((_, i) => (
+                  <Box
+                    key={`skeleton-${i}`}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "100px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 42px",
+                      minHeight: 70,
+                      alignItems: "center",
+                      px: 1.8,
+                      borderBottom: "1px solid #f3f4f6",
+                      gap: 2,
+                    }}
+                  >
+                    <Skeleton variant="rounded" width={40} height={20} />
+                    <Skeleton variant="text" width="60%" />
+                    <Skeleton variant="text" width="50%" />
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" />
+                    <Skeleton variant="text" width="30%" />
+                    <Skeleton variant="circular" width={28} height={28} />
+                    <Skeleton variant="text" width="50%" />
+                    <Skeleton variant="circular" width={24} height={24} />
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {!isLoading && displayedGroups.map((group) => {
               return (
                 <Box
                   key={group.id}

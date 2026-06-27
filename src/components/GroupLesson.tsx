@@ -192,14 +192,11 @@ export default function GroupLesson() {
     try {
       const presentStudentIds = attendance
         .filter(s => s.present)
-        .map(s => s.student_id);
+        .map(s => Number(s.student_id));
 
       await axiosClient.post(`/attendances`, {
-        group_id: Number(id),
-        date: lessonId,
-        topic: finalTopic,
-        type: topicType,
-        students: presentStudentIds
+        lessonId: lessonId,
+        presentStudentIds: presentStudentIds
       });
 
       setSnackbarMsg("Dars va davomat muvaffaqiyatli saqlandi!");

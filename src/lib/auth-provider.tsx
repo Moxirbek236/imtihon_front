@@ -55,14 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, [loadFromStorage]);
 
-  // Set default authorization header on mount
-  useEffect(() => {
-    if (token) {
-      import("@/lib/api/client").then((mod) => {
-        mod.default.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      });
-    }
-  }, [token]);
 
   const login = useCallback(
     async (phone: string, password: string) => {

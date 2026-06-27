@@ -38,12 +38,18 @@ function shouldForceLogin(error: { response?: { status?: number; data?: { messag
   );
 }
 
+import { toast } from 'sonner';
+
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const requestUrl = String(error.config?.url || "");
     if (requestUrl.includes("/auth/login")) {
       return Promise.reject(error);
+    }
+
+    if (error.response?.status === 403) {
+      toast.error("Sizda ruxsat yo'q");
     }
 
     if (shouldForceLogin(error)) {

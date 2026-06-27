@@ -1,7 +1,1 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/groups/page": "app/dashboard/groups/page.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js",
-  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js"
-}
+{}

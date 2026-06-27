@@ -53,15 +53,27 @@ export default function Login() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+import { z } from "zod";
+
+const loginSchema = z.object({
+  phone: z.string().regex(/^\+998\d{9}$/, "Telefon raqam noto'g'ri (Masalan: +998901234567)"),
+  password: z.string().min(1, "Parol kiritilishi shart")
+});
+
   const handleSubmit = async () => {
-    if (!login.trim() || !password.trim()) {
-      setError("Login va parolni to'liq kiriting!");
+    const rawPhone = login.replace(/[\s-]/g, "");
+    const parsed = loginSchema.safeParse({ phone: rawPhone, password });
+    
+    if (!parsed.success) {
+      const msg = parsed.error.errors[0].message;
+      setError(msg);
+      showAlert(msg, "error");
       return;
     }
 
     try {
       const res = await axiosClient.post("/auth/login", {
-        phone: login,
+        phone: rawPhone,
         password,
       });
 
@@ -84,7 +96,7 @@ export default function Login() {
         setError("Login muvaffaqiyatsiz. Token qaytmadi.");
         showAlert("Login muvaffaqiyatsiz. Token qaytmadi.", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       const message =
         err.response?.data?.message ||
         err.message ||
@@ -94,7 +106,7 @@ export default function Login() {
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: any) => {
     if (e.key === "Enter") handleSubmit();
   };
 
@@ -247,7 +259,7 @@ export default function Login() {
               variant="contained"
               onClick={handleSubmit}
               sx={{
-                background: "#1a2744",
+                background: "#10b981",
                 color: "#fff",
                 py: 1.3,
                 fontSize: 15,
@@ -255,8 +267,8 @@ export default function Login() {
                 letterSpacing: 0.5,
                 borderRadius: 1,
                 textTransform: "none",
-                "&:hover": { background: "#253660" },
-                "&:active": { background: "#111c35" },
+                "&:hover": { background: "#059669" },
+                "&:active": { background: "#047857" },
               }}
             >
               Kirish
