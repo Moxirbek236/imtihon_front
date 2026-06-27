@@ -132,7 +132,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [alert, setAlert] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({ open: false, message: "", severity: "error" });
-  
+
   const [page, setPage] = useState(() => Number(urlSearchParams.get("page")) || initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
   const [searchQuery, setSearchQuery] = useState(() => urlSearchParams.get("search") || "");
@@ -177,10 +177,10 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
       const getApi = async () => {
         try {
           const coursesRes = await axiosClient.get("/courses/all?limit=1000");
-          if(coursesRes?.data?.success) setCourses(coursesRes.data.data);
-          
+          if (coursesRes?.data?.success) setCourses(coursesRes.data.data);
+
           const roomsRes = await axiosClient.get("/rooms?limit=1000");
-          if(roomsRes?.data?.success) setRooms(roomsRes.data.data);
+          if (roomsRes?.data?.success) setRooms(roomsRes.data.data);
         } catch (error) {
           console.error(error);
         }
@@ -198,7 +198,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
     const timer = setTimeout(async () => {
       try {
         const res = await axiosClient.get(`/teachers?search=${teacherSearch.trim()}`);
-        if(res?.data?.success) setTeachers(res.data.data);
+        if (res?.data?.success) setTeachers(res.data.data);
       } catch (error) {
         console.error(error);
       }
@@ -215,7 +215,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
     const timer = setTimeout(async () => {
       try {
         const res = await axiosClient.get(`/students/all?search=${studentSearch.trim()}`);
-        if(res?.data?.success) setStudents(res.data.data);
+        if (res?.data?.success) setStudents(res.data.data);
       } catch (error) {
         console.error(error);
       }
@@ -353,7 +353,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         setAlert({ open: true, message: "Iltimos barcha majburiy maydonlarni to'ldiring!", severity: "error" });
         return;
       }
-      
+
       const payload = {
         name: form.name,
         description: form.description,
@@ -417,7 +417,7 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         <Typography sx={{ fontSize: 30, fontWeight: 700, color: "#111827", letterSpacing: 0 }}>
           {currentStatus === "planned" ? "Yig'ilayotgan guruhlar" : "Guruhlar"}
         </Typography>
-        <RoleGuard roles={["CREATO", "SUPERADMIN", "ADMIN"]}>
+        <RoleGuard roles={["CREATOR", "SUPERADMIN", "ADMIN"]}>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -723,13 +723,13 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                         border: "1px solid #f0d9ff",
                         bgcolor: "#fff7ff",
                         color: "#a21caf",
-                        fontSize: 11, 
+                        fontSize: 11,
                         fontWeight: 600,
                       }}
                     >
                       {group.course.name}
                     </Box>
-                  </Box> 
+                  </Box>
 
                   <Box sx={{ textAlign: "center" }}>
                     <Typography sx={{ fontSize: 12, color: "#374151" }}>
@@ -753,9 +753,9 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                   <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: "center" }}>
                     {
                       (group.teachers || []).map((teacher) => (
-                        <Box 
+                        <Box
                           key={`${teacher.id}`}
-                          component="span" 
+                          component="span"
                           sx={{
                             px: 0.8,
                             py: 0.25,
@@ -1055,9 +1055,9 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                     }}
                   >
                     {teacher.full_name}
-                    <Close 
-                      sx={{ fontSize: 14, cursor: "pointer", "&:hover": { color: "#7e22ce" } }} 
-                      onClick={() => toggleArrayItem("teachers", id)} 
+                    <Close
+                      sx={{ fontSize: 14, cursor: "pointer", "&:hover": { color: "#7e22ce" } }}
+                      onClick={() => toggleArrayItem("teachers", id)}
                     />
                   </Box>
                 ) : null;
@@ -1115,9 +1115,9 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                     }}
                   >
                     {student.full_name}
-                    <Close 
-                      sx={{ fontSize: 14, cursor: "pointer", "&:hover": { color: "#7e22ce" } }} 
-                      onClick={() => toggleArrayItem("students", id)} 
+                    <Close
+                      sx={{ fontSize: 14, cursor: "pointer", "&:hover": { color: "#7e22ce" } }}
+                      onClick={() => toggleArrayItem("students", id)}
                     />
                   </Box>
                 ) : null;
@@ -1379,17 +1379,17 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
         onClose={handleCloseAlert}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={() => setAlert((prev) => ({ ...prev, open: false }))} 
-          severity={alert.severity} 
+        <Alert
+          onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
+          severity={alert.severity}
           variant="filled"
-          sx={{ 
-            width: "100%", 
+          sx={{
+            width: "100%",
             bgcolor: "#991b1b", // Dark red
             color: "white",
             fontWeight: 600,
             "& .MuiAlert-icon": { color: "white" }
-          }} 
+          }}
         >
           {alert.message}
         </Alert>
