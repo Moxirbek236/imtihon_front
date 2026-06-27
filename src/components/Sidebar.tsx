@@ -341,7 +341,11 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
   if (role === "STUDENT") {
     const studentNavItems = [
       { label: "Bosh sahifa", icon: <Home />, id: "home" },
+      { label: "To'lovlarim", icon: <CreditCard />, id: "payments" },
       { label: "Guruhlarim", icon: <Groups />, id: "my-groups" },
+      { label: "Ko'rsatkichlarim", icon: <BarChart />, id: "metrics" },
+      { label: "Reyting", icon: <Equalizer />, id: "rating" },
+      { label: "Do'kon", icon: <ShoppingCart />, id: "shop" },
       { label: "Sozlamalar", icon: <Settings />, id: "settings" },
     ];
 
