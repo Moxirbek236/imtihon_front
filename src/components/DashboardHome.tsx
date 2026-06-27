@@ -24,6 +24,7 @@ import {
   FiberManualRecord,
 } from "@mui/icons-material";
 import axiosClient from "../api/axios";
+import AdminTimetable from "./AdminTimetable";
 
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
@@ -150,6 +151,11 @@ export default function DashboardHome() {
             </CardContent>
           </Card>
         ))}
+      </Box>
+
+      {/* Admin Timetable */}
+      <Box sx={{ mb: 4 }}>
+        <AdminTimetable />
       </Box>
 
       {/* Accordion Sections */}

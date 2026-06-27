@@ -139,8 +139,8 @@ export default function StudentMyGroups() {
               <>
                 {displayedGroups.map((group, index) => (
                   <Box
-                    key={group.groupId}
-                    onClick={() => router.push(`/dashboard/my-groups/${group.groupId}`)}
+                    key={group.id}
+                    onClick={() => router.push(`/dashboard/my-groups/${group.id}`)}
                     sx={{
                       display: "grid",
                       gridTemplateColumns: "60px 2fr 2fr 1fr 1fr",
@@ -156,17 +156,17 @@ export default function StudentMyGroups() {
                     }}
                   >
                     <Typography sx={{ fontSize: 13, color: "#111827" }}>{index + 1}</Typography>
-                    <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.groupName}</Typography>
-                    <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.courseName}</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.name}</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563" }}>{group.course}</Typography>
                     <Box>
                       <Avatar 
                         onClick={(e) => { e.stopPropagation(); handleOpenTeachers(group); }}
                         sx={{ width: 26, height: 26, bgcolor: "#cd9869", fontSize: 12, cursor: "pointer", "&:hover": { opacity: 0.9 } }}
                       >
-                        {group.teachersCount}
+                        {group.teachers_count}
                       </Avatar>
                     </Box>
-                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{formatDate(group.startDate)}</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{formatDate(group.start_date)}</Typography>
                   </Box>
                 ))}
 
@@ -189,7 +189,7 @@ export default function StudentMyGroups() {
           {selectedGroup && (
             <Box>
               <Typography sx={{ fontSize: 20, fontWeight: 500, color: "#111827", mb: 1.5 }}>
-                {selectedGroup.groupName}
+                {selectedGroup.name}
               </Typography>
               <Typography sx={{ fontSize: 18, color: "#4b5563", mb: 3 }}>
                 Faol
@@ -205,9 +205,9 @@ export default function StudentMyGroups() {
                 {selectedGroup.teachers?.map((teacher, idx) => (
                   <Box key={idx} sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 2fr", minHeight: 48, alignItems: "center", px: 2, borderBottom: "1px solid #e5e7eb", "&:last-child": { borderBottom: "none" } }}>
                     <Typography sx={{ fontSize: 13, color: "#111827" }}>{teacher.full_name}</Typography>
-                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{teacher.role || "Teacher"}</Typography>
-                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{getShortDays(teacher.week_day)}</Typography>
-                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{getEndTime(teacher.start_time, teacher.duration_hours)}</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#111827" }}>Teacher</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{getShortDays(selectedGroup.week_day)}</Typography>
+                    <Typography sx={{ fontSize: 13, color: "#111827" }}>{getEndTime(selectedGroup.start_time, selectedGroup.course_duration)}</Typography>
                   </Box>
                 ))}
                 {!selectedGroup.teachers?.length && (

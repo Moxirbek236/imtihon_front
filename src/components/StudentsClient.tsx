@@ -65,9 +65,14 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
   const [selectedGroups, setSelectedGroups] = useState<any[]>([]);
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
+  
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [allGroups, setAllGroups] = useState<any[]>([]);
   const [groupSearch, setGroupSearch] = useState("");
+
+  const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
+  const [allBranches, setAllBranches] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchStudents() {
@@ -81,7 +86,16 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
         console.error("Talabalar yuklanmadi:", err);
       }
     }
+    async function fetchBranches() {
+      try {
+        const res = await axiosClient.get(`/branches`);
+        if (res.data?.success) setAllBranches(res.data.data);
+      } catch (err) {
+        console.error("Filiallar yuklanmadi:", err);
+      }
+    }
     fetchStudents();
+    fetchBranches();
   }, [page, searchQuery]);
 
   useEffect(() => {
@@ -123,7 +137,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
   };
 
   const handleAddOpen = () => {
-    setFullName(""); setPhone("+998"); setMail(""); setBirthDate(""); setAddress(""); setPassword(""); setSelectedGroups([]); setPhoto(null);
+    setFullName(""); setPhone("+998"); setMail(""); setBirthDate(""); setAddress(""); setPassword(""); setSelectedGroups([]); setSelectedBranches([]); setPhoto(null);
     setEditId(null);
     setIsDrawerOpen(true);
   };
@@ -135,6 +149,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
     setBirthDate(student.birth_date ? student.birth_date.split("T")[0] : "");
     setAddress(student.address || "");
     setSelectedGroups(student.groups || []);
+    setSelectedBranches(student.branches || []);
     setPhoto(null);
     setEditId(student.id);
     setIsDrawerOpen(true);
@@ -163,6 +178,9 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
     if (password) formData.append("password", password);
     if (photo) formData.append("photo", photo);
     formData.append("groups", JSON.stringify(selectedGroups.map(g => g.id)));
+    if (selectedBranches.length > 0) {
+      formData.append("branchIds", JSON.stringify(selectedBranches.map(b => b.id)));
+    }
 
     try {
       if (editId) {
@@ -519,6 +537,45 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
             />
           </Box>
 
+          {/* Branch */}
+          <Box>
+            <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#374151", mb: 1 }}>Filial</Typography>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => setIsBranchModalOpen(true)}
+              startIcon={<Add sx={{ fontSize: 18 }} />}
+              sx={{
+                textTransform: "none",
+                fontSize: 13, 
+                fontWeight: 600,
+                color: "#7c3aed",
+                borderColor: "#e5e7eb",
+                borderRadius: 2,
+                py: 1.2,
+                px: 2,
+                justifyContent: "flex-start",
+                borderWidth: "1px",
+                "&:hover": { bgcolor: "#f5f3ff", borderColor: "#7c3aed", borderWidth: "1px" },
+              }}
+            >
+              Filial qo'shish
+            </Button>
+            {selectedBranches.length > 0 && (
+              <Box sx={{ mt: 1.5, p: 1, border: "1px solid #e5e7eb", borderRadius: 2, display: "flex", flexWrap: "wrap", gap: 0.5, bgcolor: "#f9fafb" }}>
+                {selectedBranches.map((b) => (
+                  <Chip
+                    key={b.id}
+                    label={b.name}
+                    size="small"
+                    onDelete={() => setSelectedBranches((prev) => prev.filter((sb) => sb.id !== b.id))}
+                    sx={{ height: 24, fontSize: 11, borderRadius: 1.5 }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
+
           {/* Group */}
           <Box>
             <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#374151", mb: 1 }}>Guruh</Typography>
@@ -761,6 +818,38 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
           >
             Qo'shish
           </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Branch Selection Modal */}
+      <Dialog open={isBranchModalOpen} onClose={() => setIsBranchModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Box>
+            <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>Filialga biriktirish</Typography>
+            <Typography sx={{ fontSize: 12, color: "#6b7280" }}>Bir yoki bir nechta filialni tanlang</Typography>
+          </Box>
+          <IconButton onClick={() => setIsBranchModalOpen(false)} size="small" sx={{ color: "#6b7280" }}><Close fontSize="small" /></IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          <Box sx={{ border: "1px solid #e5e7eb", borderRadius: 2, overflow: "hidden" }}>
+            <List disablePadding>
+              {allBranches.map((b, idx, arr) => {
+                  const isChecked = selectedBranches.some(selectedBranch => selectedBranch.id === b.id);
+                  return (
+                    <ListItem key={b.id} disablePadding sx={{ borderBottom: idx < arr.length - 1 ? "1px solid #e5e7eb" : "none" }}>
+                      <Button fullWidth onClick={() => { isChecked ? setSelectedBranches(selectedBranches.filter(sb => sb.id !== b.id)) : setSelectedBranches([...selectedBranches, b]) }} sx={{ justifyContent: "flex-start", px: 2, py: 1.5, textTransform: "none", color: "#111827", "&:hover": { bgcolor: "#f9fafb" } }}>
+                        <Checkbox checked={isChecked} size="small" sx={{ p: 0, mr: 1.5, "&.Mui-checked": { color: "#7c3aed" } }} />
+                        <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{b.name}</Typography>
+                      </Button>
+                    </ListItem>
+                  );
+              })}
+            </List>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setIsBranchModalOpen(false)} variant="outlined" sx={{ textTransform: "none", fontSize: 13, fontWeight: 600, color: "#374151", borderColor: "#e5e7eb", borderRadius: 2, px: 2, "&:hover": { bgcolor: "#f9fafb", borderColor: "#d1d5db" } }}>Bekor qilish</Button>
+          <Button onClick={() => setIsBranchModalOpen(false)} variant="contained" sx={{ bgcolor: "#c4b5fd", color: "white", textTransform: "none", fontSize: 13, fontWeight: 600, borderRadius: 2, px: 3, boxShadow: "none", "&:hover": { bgcolor: "#a78bfa" } }}>Qo'shish</Button>
         </DialogActions>
       </Dialog>
       

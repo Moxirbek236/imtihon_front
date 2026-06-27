@@ -224,7 +224,7 @@ export default function GroupCoursework() {
               </thead>
               <tbody>
                 {homeworkData.map((row, idx) => {
-                  const isPending = row.homeworkPending > 0;
+                  const isPending = row.stats?.pending > 0;
                   const rowBg = isPending ? "#FF7A59" : "transparent";
                   const textColor = isPending ? "white" : "#4b5563";
                   const boldTextColor = isPending ? "white" : "#111827";
@@ -232,7 +232,7 @@ export default function GroupCoursework() {
                   return (
                   <tr
                     key={idx}
-                    onClick={() => router.push(`/dashboard/groups/${id}/homework/${row.homework?.[0]?.id}/results`)}
+                    onClick={() => router.push(`/dashboard/groups/${id}/homework/${row.id}/results`)}
                     style={{
                       borderBottom: "1px solid #f3f4f6",
                       cursor: "pointer",
@@ -249,24 +249,24 @@ export default function GroupCoursework() {
                     <td style={{ padding: "16px", fontSize: "13px", color: textColor }}>{idx + 1}</td>
                     <td style={{ padding: "16px", fontSize: "13px", width: "450px" }}>
                       <Typography sx={{ fontSize: 13, color: boldTextColor, fontWeight: 500, px: 2 }}>
-                        {row.topic}
+                        {row.lessons?.topic || row.title}
                       </Typography>
                     </td>
-                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.existStudentsIngroup}</td>
-                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.homeworkPending}</td>
-                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.homeworkAccept}</td>
+                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.stats?.totalStudents || 0}</td>
+                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.stats?.pending || 0}</td>
+                    <td style={{ padding: "16px", fontSize: "13px", color: textColor, textAlign: "center" }}>{row.stats?.accepted || 0}</td>
                     <td style={{ padding: "16px", fontSize: "12px", color: textColor, lineHeight: 1.4 }}>
-                      {row.homework?.[0]?.created_at
-                        ? `${formatDate(row.homework?.[0]?.created_at)} ${formatTime(row.homework?.[0]?.created_at)}`
+                      {row.created_at
+                        ? `${formatDate(row.created_at)} ${formatTime(row.created_at)}`
                         : "—"}
                     </td>
                     <td style={{ padding: "16px", fontSize: "12px", color: textColor, lineHeight: 1.4 }}>
-                      {row.homework?.[0]?.created_at
-                        ? `${formatDate(getDeadline(row.homework?.[0]?.created_at))} ${formatTime(getDeadline(row.homework?.[0]?.created_at))}`
+                      {row.created_at
+                        ? `${formatDate(getDeadline(row.created_at))} ${formatTime(getDeadline(row.created_at))}`
                         : "—"}
                     </td>
                     <td style={{ padding: "16px", fontSize: "13px", color: textColor }}>
-                      {formatDate(row.created_at)}
+                      {formatDate(row.lessons?.date)}
                     </td>
                     <td style={{ padding: "16px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                       <IconButton size="small" sx={{ color: isPending ? "white" : "#94a3b8" }}>

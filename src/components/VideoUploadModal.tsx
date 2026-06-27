@@ -33,8 +33,9 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
     if (!open) return;
     async function fetchLessons() {
       try {
-        const res = await axiosClient.get(`/students/my/group/${groupId}/lessons`);
-        if (res.data?.success) setLessons(res.data.data || []);
+        const res = await axiosClient.get(`/lessson?group_id=${groupId}`);
+        const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setLessons(data);
       } catch (e) {
         console.error("Lessons fetch error:", e);
       }
@@ -117,11 +118,14 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
       const formData = new FormData();
       // Originalname sifatida videoName ishlatamiz
       const renamedFile = new File([item.file], item.videoName, { type: item.file.type });
-      formData.append("file", renamedFile);
+      formData.append("video", renamedFile); // <-- MUST BE 'video'
+      formData.append("group_id", groupId);
+      formData.append("lesson_id", item.lessonId);
+      formData.append("title", item.videoName);
 
       try {
         await axiosClient.post(
-          `/files/group/${groupId}/upload?lessonId=${item.lessonId}`,
+          `/videos`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );

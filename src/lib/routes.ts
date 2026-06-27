@@ -1,9 +1,9 @@
-export type AppRole = "SUPERADMIN" | "TEACHER" | "STUDENT";
+export type AppRole = "CREATOR" | "SUPERADMIN" | "TEACHER" | "STUDENT";
 
 export function normalizeRole(role: string | null | undefined): AppRole | null {
   if (!role) return null;
   const upper = role.toUpperCase();
-  if (upper === "SUPERADMIN" || upper === "ADMIN") return "SUPERADMIN";
+  if (upper === "CREATOR" || upper === "SUPERADMIN" || upper === "ADMIN") return "SUPERADMIN";
   if (upper === "TEACHER") return "TEACHER";
   if (upper === "STUDENT") return "STUDENT";
   return null;
@@ -41,8 +41,10 @@ export function parseLoginResponse(data: Record<string, unknown> | null | undefi
 export function persistAuthSession(token: string, role: string | null | undefined, user?: unknown) {
   const normalizedRole = normalizeRole(role);
   localStorage.setItem("token", token);
+  document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
   if (normalizedRole) {
     localStorage.setItem("role", normalizedRole);
+    document.cookie = `role=${normalizedRole}; path=/; max-age=86400; SameSite=Lax`;
   }
   if (user) {
     localStorage.setItem("user", JSON.stringify(user));
@@ -53,4 +55,6 @@ export function clearAuthSession() {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("user");
+  document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
+  document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
 }

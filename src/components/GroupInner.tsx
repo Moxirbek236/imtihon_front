@@ -32,6 +32,7 @@ export default function GroupInner({ id }) {
   interface DayData {
     month: string;
     day: number;
+    date: string;
     isCompleted?: boolean;
   }
 
@@ -70,13 +71,39 @@ export default function GroupInner({ id }) {
     async function fetchSchedules() {
       try {
         const res = await axiosClient.get(`/groups/${id}/schedule`);
-        const rawData = res?.data?.[0] || {};
-        setSchedules(rawData);
-        // Active oyga o'tish
-        const activeMonthKey = Object.keys(rawData).find(k => rawData[k]?.isActive);
-        if (activeMonthKey) {
-          setCurrentMonthIndex(Number(activeMonthKey) - 1);
+        const dataArray = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : []);
+        
+        const mappedSchedules: Record<string, ScheduleMonth> = {};
+        const todayStr = new Date().toISOString().split('T')[0];
+        let foundActive = false;
+        let activeKey = "1";
+
+        dataArray.forEach((monthData: any) => {
+           const key = String(monthData.learning_month);
+           const isCurrentMonth = monthData.lessons.some((l: any) => l.date === todayStr || l.date > todayStr);
+           
+           if (!foundActive && isCurrentMonth) {
+             foundActive = true;
+             activeKey = key;
+           }
+
+           mappedSchedules[key] = {
+             isActive: false, // We'll set the active one below
+             days: monthData.lessons.map((l: any) => ({
+               month: monthData.month_name,
+               day: l.day_of_month,
+               date: l.date,
+               isCompleted: false // Default to false
+             }))
+           };
+        });
+
+        if (mappedSchedules[activeKey]) {
+          mappedSchedules[activeKey].isActive = true;
         }
+
+        setSchedules(mappedSchedules);
+        setCurrentMonthIndex(Number(activeKey) - 1);
       } catch (error) {
         console.error("Error fetching schedules:", error);
       }
@@ -90,43 +117,32 @@ export default function GroupInner({ id }) {
     router.push(`?tab=${newValue}`);
   };
 
-  // Joriy oy kunlari - API dan (currentMonthIndex + 1 kalit)
   const currentMonthKey = String(currentMonthIndex + 1);
   const currentMonthData = schedules[currentMonthKey] || { isActive: false, days: [] };
   const currentMonthDays = currentMonthData.days || [];
 
-  // Kun o'tganmi yoki yo'qligini tekshirish
-  const monthNameToIndex = {
-    "January": 0, "February": 1, "March": 2, "April": 3,
-    "May": 4, "June": 5, "July": 6, "August": 7,
-    "September": 8, "October": 9, "November": 10, "December": 11
-  };
-  const isPastDay = (d) => {
+  const isPastDay = (d: DayData) => {
+    if (!d.date) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const lessonDate = new Date(today.getFullYear(), monthNameToIndex[d.month] ?? 0, d.day);
-    // Agar oy indeksi bugungi oydan kichik bo'lsa, o'tgan yil emas bu yil hisoblaymiz
+    const lessonDate = new Date(d.date);
     return lessonDate < today;
   };
 
-  // Kunga qarab rang aniqlash
-  const getDayStyle = (d) => {
+  const getDayStyle = (d: DayData) => {
     if (d.isCompleted) return { bgcolor: "#dcfce7", border: "1px solid #86efac", color: "#15803d" };
     if (isPastDay(d)) return { bgcolor: "#e2e8f0", border: "none", color: "#94a3b8" };
     return { bgcolor: "white", border: "1px solid #e5e7eb", color: "#6b7280" };
   };
 
-  const getHoverStyle = (d) => {
+  const getHoverStyle = (d: DayData) => {
     if (d.isCompleted) return { bgcolor: "#bbf7d0", borderColor: "#4ade80" };
     if (isPastDay(d)) return { bgcolor: "#cbd5e1", borderColor: "transparent" };
     return { bgcolor: "#f8fafc", borderColor: "#d1d5db" };
   };
 
-  // To'liq sana hosil qilish (navigate uchun)
-  const getFullDate = (d) => {
-    const year = new Date().getFullYear();
-    const monthIdx = monthNameToIndex[d.month] ?? 0;
-    return `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`;
+  const getFullDate = (d: DayData) => {
+    return d.date || "";
   };
 
   const renderParameters = () => {
@@ -291,49 +307,55 @@ export default function GroupInner({ id }) {
             </Typography>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 3 }}>
-              {/* Schedule Item 1 */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #f1f5f9" }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", width: "20%" }}>
-                  {oneGroup?.teachers?.[0]?.full_name || "Sultonqulov Abduxoshim"}
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  Du/Se/Ch/Pa/Ju
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  09:30 dan - 12:30 gacha
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  15 Yan, 2026 - 27 Iyun, 2026
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "right" }}>
-                  F2 Autodesk // 18
-                </Typography>
-              </Box>
+              {oneGroup?.teachers?.map((teacher, index) => {
+                const getShortDays = (daysArray) => {
+                  const dayMap = { MONDAY: "Du", TUESDAY: "Se", WEDNESDAY: "Ch", THURSDAY: "Pa", FRIDAY: "Ju", SATURDAY: "Sha", SUNDAY: "Ya" };
+                  return daysArray?.map(d => dayMap[d.toUpperCase()] || dayMap[d] || d).join("/") || "—";
+                };
+                const getEndTime = (startTime, durationHours) => {
+                  if (!startTime || !durationHours) return startTime || "—";
+                  const [hours, minutes] = startTime.split(":").map(Number);
+                  const date = new Date();
+                  date.setHours(hours, minutes, 0, 0);
+                  date.setHours(date.getHours() + durationHours);
+                  return `${startTime} dan - ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} gacha`;
+                };
+                const formatDate = (dateStr) => {
+                   if (!dateStr) return "—";
+                   const d = new Date(dateStr);
+                   const months = ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"];
+                   return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]}, ${d.getFullYear()}`;
+                };
+                const formattedDays = getShortDays(oneGroup.week_day);
+                const formattedTime = getEndTime(oneGroup.start_time, oneGroup.course_duration);
+                const dateRange = `${formatDate(oneGroup.start_date)} - ${formatDate(oneGroup.end_date)}`;
+                const roomName = typeof oneGroup.rooms === 'object' && oneGroup.rooms !== null ? oneGroup.rooms.name : (oneGroup.rooms || "Noma'lum xona");
 
-              {/* Schedule Item 2 */}
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #f1f5f9" }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", width: "20%" }}>
-                  +++Yusupova Barchinoy
+                return (
+                  <Box key={teacher.id || index} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #f1f5f9" }}>
+                    <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", width: "20%" }}>
+                      {teacher.full_name}
+                    </Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
+                      {formattedDays}
+                    </Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
+                      {formattedTime}
+                    </Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
+                      {dateRange}
+                    </Typography>
+                    <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "right" }}>
+                      {roomName} | {oneGroup.max_students || 0}
+                    </Typography>
+                  </Box>
+                )
+              })}
+              {!oneGroup?.teachers?.length && (
+                <Typography sx={{ fontSize: 13, color: "#6b7280", textAlign: "center", py: 2 }}>
+                  O'qituvchi biriktirilmagan
                 </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  Du/Se/Ch/Pa/Ju
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  08:00 dan - 09:30 gacha
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "center" }}>
-                  15 Yan, 2026 - 27 Iyun, 2026
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: "#4b5563", width: "20%", textAlign: "right" }}>
-                  F2 Autodesk // 18
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-              <Button variant="outlined" sx={{ borderColor: "#e5e7eb", color: "#4b5563", textTransform: "none", fontSize: 13, borderRadius: 2 }}>
-                Yana ko'rsatish (9)
-              </Button>
+              )}
             </Box>
 
             {/* Pagination / Months */}

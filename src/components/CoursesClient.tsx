@@ -18,6 +18,9 @@ import {
   DialogContent,
   DialogActions,
   Pagination,
+  List,
+  ListItem,
+  Checkbox,
 } from "@mui/material";
 import {
   Add,
@@ -52,10 +55,37 @@ export default function CoursesClient({ initialCourses, initialPagination, searc
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
   const [search, setSearch] = useState(searchParams?.search || "");
 
+  const [selectedBranches, setSelectedBranches] = useState<any[]>([]);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
+  const [allBranches, setAllBranches] = useState<any[]>([]);
+
   useEffect(() => {
-    setCourses(initialCourses);
-    setTotalPages(initialPagination?.totalPages || 1);
-  }, [initialCourses, initialPagination]);
+    async function fetchBranches() {
+      try {
+        const res = await axiosClient.get(`/branches`);
+        if (res.data?.success) setAllBranches(res.data.data);
+      } catch (err) {
+        console.error("Filiallar yuklanmadi:", err);
+      }
+    }
+    fetchBranches();
+  }, []);
+
+  useEffect(() => {
+    // If SSR failed (e.g. missing cookie), fetch on client-side
+    if (!initialCourses || initialCourses.length === 0) {
+      axiosClient.get(`/courses/all?limit=1000&page=${page}&search=${search}`)
+        .then(res => {
+          const data = res.data?.data || res.data || [];
+          setCourses(data);
+          setTotalPages(res.data?.pagination?.totalPages || 1);
+        })
+        .catch(err => console.error("Client fetch error:", err));
+    } else {
+      setCourses(initialCourses);
+      setTotalPages(initialPagination?.totalPages || 1);
+    }
+  }, [initialCourses, initialPagination, page, search]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -68,6 +98,7 @@ export default function CoursesClient({ initialCourses, initialPagination, searc
 
   const handleAddOpen = () => {
     setCourseData({ name: "", description: "", price: 0, duration_hours: 0, duration_month: 0 });
+    setSelectedBranches([]);
     setEditId(null);
     setIsDrawerOpen(true);
   };
@@ -80,30 +111,31 @@ export default function CoursesClient({ initialCourses, initialPagination, searc
       duration_hours: course.duration_hours,
       duration_month: course.duration_month,
     });
+    setSelectedBranches(course.branches || []);
     setEditId(course.id);
     setIsDrawerOpen(true);
   };
 
   async function handleSaveCourse() {
     try {
-      if (editId) {
-        const res = await axiosClient.patch(`/courses/${editId}`, {
+        const payload: any = {
           ...courseData,
           price: Number(courseData.price),
           duration_hours: Number(courseData.duration_hours),
           duration_month: Number(courseData.duration_month)
-        });
-        if (res.data?.success) {
-          setIsDrawerOpen(false);
-          router.refresh();
+        };
+        if (selectedBranches.length > 0) {
+          payload.branchIds = selectedBranches.map(b => b.id);
         }
-      } else {
-        const res = await axiosClient.post("/courses", {
-          ...courseData,
-          price: Number(courseData.price),
-          duration_hours: Number(courseData.duration_hours),
-          duration_month: Number(courseData.duration_month)
-        }); 
+
+        if (editId) {
+          const res = await axiosClient.put(`/courses/${editId}`, payload);
+          if (res.data?.success) {
+            setIsDrawerOpen(false);
+            router.refresh();
+          }
+        } else {
+          const res = await axiosClient.post("/courses", payload);
         if (res.status === 201 || res.data?.success) {
           setIsDrawerOpen(false);
           router.refresh();
@@ -316,6 +348,35 @@ export default function CoursesClient({ initialCourses, initialPagination, searc
               <Typography sx={{ fontSize: 12, color: "#6b7280", mt: 0.8 }}>This is a hint text to help user.</Typography>
             </Box>
 
+            <Box>
+              <Typography sx={{ fontSize: 13, mb: 0.5, fontWeight: 600, color: "#374151" }}>Filial</Typography>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => setIsBranchModalOpen(true)}
+                startIcon={<Add sx={{ fontSize: 18 }} />}
+                sx={{
+                  textTransform: "none", fontSize: 13, fontWeight: 600, color: "#7c3aed", borderColor: "#e5e7eb", borderRadius: 2, py: 1.2, px: 2, justifyContent: "flex-start",
+                  "&:hover": { bgcolor: "#f5f3ff", borderColor: "#7c3aed" }
+                }}
+              >
+                Filial qo'shish
+              </Button>
+              {selectedBranches.length > 0 && (
+                <Box sx={{ mt: 1.5, p: 1, border: "1px solid #e5e7eb", borderRadius: 2, display: "flex", flexWrap: "wrap", gap: 0.5, bgcolor: "#f9fafb" }}>
+                  {selectedBranches.map((b) => (
+                    <Chip
+                      key={b.id}
+                      label={b.name}
+                      size="small"
+                      onDelete={() => setSelectedBranches(prev => prev.filter(sb => sb.id !== b.id))}
+                      sx={{ height: 24, fontSize: 11, borderRadius: 1.5 }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
+
           </Box>
 
           <Box sx={{ p: 2, borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
@@ -337,6 +398,38 @@ export default function CoursesClient({ initialCourses, initialPagination, searc
         <DialogActions sx={{ p: 2, pt: 0 }}>
           <Button variant="text" onClick={() => setIsDeleteDialogOpen(false)} sx={{ color: "#6b7280", textTransform: "none", fontWeight: 600 }}>Bekor qilish</Button>
           <Button variant="contained" color="error" onClick={handleDelete} sx={{ textTransform: "none", fontWeight: 600, boxShadow: "none", borderRadius: 2 }}>Ha</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Branch Selection Modal */}
+      <Dialog open={isBranchModalOpen} onClose={() => setIsBranchModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Box>
+            <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>Filialga biriktirish</Typography>
+            <Typography sx={{ fontSize: 12, color: "#6b7280" }}>Bir yoki bir nechta filialni tanlang</Typography>
+          </Box>
+          <IconButton onClick={() => setIsBranchModalOpen(false)} size="small" sx={{ color: "#6b7280" }}><Close fontSize="small" /></IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          <Box sx={{ border: "1px solid #e5e7eb", borderRadius: 2, overflow: "hidden" }}>
+            <List disablePadding>
+              {allBranches.map((b, idx, arr) => {
+                  const isChecked = selectedBranches.some(selectedBranch => selectedBranch.id === b.id);
+                  return (
+                    <ListItem key={b.id} disablePadding sx={{ borderBottom: idx < arr.length - 1 ? "1px solid #e5e7eb" : "none" }}>
+                      <Button fullWidth onClick={() => { isChecked ? setSelectedBranches(selectedBranches.filter(sb => sb.id !== b.id)) : setSelectedBranches([...selectedBranches, b]) }} sx={{ justifyContent: "flex-start", px: 2, py: 1.5, textTransform: "none", color: "#111827", "&:hover": { bgcolor: "#f9fafb" } }}>
+                        <Checkbox checked={isChecked} size="small" sx={{ p: 0, mr: 1.5, "&.Mui-checked": { color: "#7c3aed" } }} />
+                        <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{b.name}</Typography>
+                      </Button>
+                    </ListItem>
+                  );
+              })}
+            </List>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setIsBranchModalOpen(false)} variant="outlined" sx={{ textTransform: "none", fontSize: 13, fontWeight: 600, color: "#374151", borderColor: "#e5e7eb", borderRadius: 2, px: 2, "&:hover": { bgcolor: "#f9fafb", borderColor: "#d1d5db" } }}>Bekor qilish</Button>
+          <Button onClick={() => setIsBranchModalOpen(false)} variant="contained" sx={{ bgcolor: "#c4b5fd", color: "white", textTransform: "none", fontSize: 13, fontWeight: 600, borderRadius: 2, px: 3, boxShadow: "none", "&:hover": { bgcolor: "#a78bfa" } }}>Qo'shish</Button>
         </DialogActions>
       </Dialog>
     </Box>

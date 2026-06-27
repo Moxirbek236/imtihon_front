@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -57,40 +59,31 @@ export default function GroupLesson() {
   const [description, setDescription] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
 
-  const topics = [
-    "Introduction to React",
-    "State and Props",
-    "React Hooks (useEffect, useState)",
-    "Routing with React Router",
-    "Global State Management (Context API)",
-  ];
+  const [topics, setTopics] = useState<string[]>([]);
+  const role = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
 
   const durationMonth = Object.keys(schedules).length || 0;
 
-  const monthNameToIndex = {
-    "January": 0, "February": 1, "March": 2, "April": 3,
-    "May": 4, "June": 5, "July": 6, "August": 7,
-    "September": 8, "October": 9, "November": 10, "December": 11
-  };
-
-  const isPastDay = (d) => {
+  const isPastDay = (d: any) => {
+    if (!d.date) return false;
+    const [y, m, day] = d.date.split('-').map(Number);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const lessonDate = new Date(today.getFullYear(), monthNameToIndex[d.month] ?? 0, d.day);
-    return lessonDate < today;
+    const target = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const lesson = new Date(y, m - 1, day);
+    return lesson < target;
   };
 
-  const isFutureDay = (d) => {
+  const isFutureDay = (d: any) => {
+    if (!d.date) return false;
+    const [y, m, day] = d.date.split('-').map(Number);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const lessonDate = new Date(today.getFullYear(), monthNameToIndex[d.month] ?? 0, d.day);
-    return lessonDate > today;
+    const target = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const lesson = new Date(y, m - 1, day);
+    return lesson > target;
   };
 
-  const getFullDate = (d) => {
-    const year = new Date().getFullYear();
-    const monthIdx = monthNameToIndex[d.month] ?? 0;
-    return `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`;
+  const getFullDate = (d: any) => {
+    return d.date || "";
   };
 
   const getDayStyle = (d) => {
@@ -111,10 +104,37 @@ export default function GroupLesson() {
 
   // Fetch group info, schedules, and lesson+attendance for this date
   useEffect(() => {
-    async function fetchGroup() {
+    async function initData() {
       try {
-        const res = await axiosClient.get(`/groups/${id}`);
-        setOneGroup(res?.data?.data);
+        let groupStudents = [];
+        const resG = await axiosClient.get(`/groups/${id}`);
+        const gData = resG?.data?.data;
+        setOneGroup(gData);
+        groupStudents = gData?.students || gData?.studentGroups || [];
+
+        const resL = await axiosClient.get(`/attendances/by-date?group_id=${id}&date=${lessonId}`);
+        const data = resL?.data?.data || resL?.data;
+        if (data?.lesson) {
+          setExistingLesson(data.lesson);
+          setTopic(data.lesson.topic || "");
+          setDescription(data.lesson.description || "");
+        }
+        
+        if (data?.attendances?.length) {
+          setAttendance(data.attendances.map((s: any) => ({
+            student_id: s.student_id,
+            full_name: s.students?.full_name,
+            photo: s.students?.photo,
+            present: s.isPresent
+          })));
+        } else {
+          setAttendance(groupStudents.map((sg: any) => ({
+            student_id: sg.students?.id || sg.id,
+            full_name: sg.students?.full_name || sg.full_name,
+            photo: sg.students?.photo || sg.photo,
+            present: false
+          })));
+        }
       } catch (err) {
         console.error(err);
       }
@@ -123,41 +143,77 @@ export default function GroupLesson() {
     async function fetchSchedules() {
       try {
         const res = await axiosClient.get(`/groups/${id}/schedule`);
-        const rawData = res?.data?.[0] || {};
-        setSchedules(rawData);
-        const activeMonthKey = Object.keys(rawData).find(k => rawData[k]?.isActive);
-        if (activeMonthKey) setCurrentMonthIndex(Number(activeMonthKey) - 1);
+        const dataArray = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : []);
+        
+        const mappedSchedules: Record<string, any> = {};
+        const todayStr = new Date().toISOString().split('T')[0];
+        let foundActive = false;
+        let activeKey = "1";
+
+        dataArray.forEach((monthData: any) => {
+           const key = String(monthData.learning_month);
+           const isCurrentMonth = monthData.lessons.some((l: any) => l.date === todayStr || l.date > todayStr);
+           
+           if (!foundActive && isCurrentMonth) {
+             foundActive = true;
+             activeKey = key;
+           }
+
+           mappedSchedules[key] = {
+             isActive: false,
+             days: monthData.lessons.map((l: any) => ({
+               month: monthData.month_name,
+               day: l.day_of_month,
+               date: l.date,
+               isCompleted: false
+             }))
+           };
+        });
+
+        if (mappedSchedules[activeKey]) mappedSchedules[activeKey].isActive = true;
+
+        setSchedules(mappedSchedules);
+        setCurrentMonthIndex(Number(activeKey) - 1);
       } catch (err) {
         console.error(err);
       }
     }
 
-    async function fetchLessonData() {
+
+    async function fetchTopics() {
       try {
-        const res = await axiosClient.get(`/attendances/by-date?groupId=${id}&date=${lessonId}`);
-        const data = res?.data?.data;
-        if (data?.lesson) {
-          setExistingLesson(data.lesson);
-          setTopic(data.lesson.topic || "");
-          setDescription(data.lesson.description || "");
-        }
-        if (data?.attendance?.length) {
-          setAttendance(data.attendance.map(s => ({
-            student_id: s.student_id,
-            full_name: s.full_name,
-            photo: s.photo,
-            present: s.isPresent
-          })));
+        const res = await axiosClient.get(`/lessson?group_id=${id}`);
+        if (Array.isArray(res?.data)) {
+           const uniqueTopics = Array.from(new Set(res.data.map((l: any) => l.topic).filter(Boolean)));
+           setTopics(uniqueTopics as string[]);
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    fetchGroup();
+    initData();
     fetchSchedules();
-    fetchLessonData();
+    fetchTopics();
   }, [id, lessonId]);
+  
+  const isPastDate = (dateStr: string) => {
+    if (!dateStr) return false;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const today = new Date();
+    const target = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const lesson = new Date(y, m - 1, d);
+    return lesson < target;
+  };
+
+  const isFutureDate = (dateStr: string) => {
+    if (!dateStr) return false;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const today = new Date();
+    const target = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const lesson = new Date(y, m - 1, d);
+    return lesson > target;
+  };
   
   const currentMonthKey = String(currentMonthIndex + 1);
   const currentMonthData = schedules[currentMonthKey] || { isActive: false, days: [] };
@@ -195,8 +251,14 @@ export default function GroupLesson() {
         .map(s => Number(s.student_id));
 
       await axiosClient.post(`/attendances`, {
-        lessonId: lessonId,
-        presentStudentIds: presentStudentIds
+        group_id: Number(id),
+        date: lessonId,
+        topic: finalTopic,
+        type: topicType,
+        records: attendance.map(s => ({
+          student_id: Number(s.student_id),
+          present: Boolean(s.present)
+        }))
       });
 
       setSnackbarMsg("Dars va davomat muvaffaqiyatli saqlandi!");
@@ -363,20 +425,7 @@ export default function GroupLesson() {
           )}
         </Box>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 700, mb: 1, color: "#6b7280" }}>Tavsif (ixtiyoriy)</Typography>
-          <TextField
-            fullWidth
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Dars haqida qo'shimcha ma'lumot..."
-            variant="outlined"
-            size="small"
-            multiline
-            rows={2}
-            sx={{ "& .MuiOutlinedInput-root": { bgcolor: "#f8fafc", borderRadius: 2, "& fieldset": { borderColor: "#e2e8f0" } } }}
-          />
-        </Box>
+
 
         <TableContainer>
           <Table size="small">
@@ -384,13 +433,14 @@ export default function GroupLesson() {
               <TableRow sx={{ "& .MuiTableCell-root": { borderBottom: "1px solid #f1f5f9", py: 1.5, color: "#94a3b8", fontWeight: 600, fontSize: 12 } }}>
                 <TableCell width="50">#</TableCell>
                 <TableCell>O'quvchi ismi</TableCell>
+                <TableCell align="center">Vaqti</TableCell>
                 <TableCell align="right">Keldi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {attendance.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} align="center" sx={{ py: 3, color: "#94a3b8", fontSize: 13 }}>
+                  <TableCell colSpan={4} align="center" sx={{ py: 3, color: "#94a3b8", fontSize: 13 }}>
                     O'quvchilar yuklanmoqda...
                   </TableCell>
                 </TableRow>
@@ -409,11 +459,14 @@ export default function GroupLesson() {
                       {row.full_name}
                     </Box>
                   </TableCell>
+                  <TableCell align="center" sx={{ color: "#ef4444", fontWeight: 600 }}>
+                    {oneGroup?.start_time || "—"}
+                  </TableCell>
                   <TableCell align="right">
                     <Switch
                       checked={row.present}
                       onChange={() => handleToggle(row.student_id)}
-                      disabled={!!existingLesson}
+                      disabled={isFutureDate(lessonId) || (isPastDate(lessonId) && role === 'TEACHER') || (!!existingLesson && role === 'TEACHER')}
                       sx={{
                         "& .MuiSwitch-switchBase.Mui-checked": { color: "#10b981" },
                         "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#10b981" },
@@ -427,13 +480,13 @@ export default function GroupLesson() {
         </TableContainer>
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-          {existingLesson ? (
+          {(isFutureDate(lessonId) || (isPastDate(lessonId) && role === 'TEACHER') || (!!existingLesson && role === 'TEACHER')) ? (
             <Button
               variant="outlined"
               disabled
               sx={{ textTransform: "none", px: 4, py: 1, borderRadius: 2, fontWeight: 600 }}
             >
-              Dars allaqachon saqlangan
+              {isFutureDate(lessonId) ? "Hali dars vaqti kelmagan" : (!!existingLesson ? "Dars allaqachon saqlangan" : "Tahrirlash mumkin emas")}
             </Button>
           ) : (
             <Button
@@ -451,7 +504,7 @@ export default function GroupLesson() {
                 "&:hover": { bgcolor: "#6d28d9" },
               }}
             >
-              {saving ? "Saqlanmoqda..." : "Saqlash"}
+              {saving ? "Saqlanmoqda..." : (existingLesson ? "Tahrirlash" : "Saqlash")}
             </Button>
           )}
         </Box>

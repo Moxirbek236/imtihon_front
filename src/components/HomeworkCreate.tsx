@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
@@ -49,10 +51,9 @@ export default function HomeworkCreate() {
   useEffect(() => {
     async function fetchLessons() {
       try {
-        const res = await axiosClient.get(`/students/my/group/${id}/lessons`);
-        if (res.data?.success) {
-          setLessons(res.data.data || []);
-        }
+        const res = await axiosClient.get(`/lessson?group_id=${id}`);
+        const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setLessons(data);
       } catch (error) {
         console.error("Error fetching lessons:", error);
       } finally {

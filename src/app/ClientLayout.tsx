@@ -55,6 +55,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     activeItem = "tests";
   } else if (pathname.includes("/profile")) {
     activeItem = "profile";
+  } else if (pathname.includes("/metrics")) {
+    activeItem = "metrics";
+  } else if (pathname.includes("/rating")) {
+    activeItem = "rating";
+  } else if (pathname.includes("/shop")) {
+    activeItem = "shop";
+  } else if (pathname.includes("/settings")) {
+    activeItem = "settings";
   }
 
   const handleItemClick = (id: string) => {
@@ -83,6 +91,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       router.push("/management/rooms");
     } else if (label === "Kurslar") {
       router.push("/management/course");
+    } else if (label === "Coin") {
+      router.push("/dashboard/rating");
+    } else if (label === "Hodimlar" || label === "Xodimlar") {
+      router.push("/management/teachers");
     } else {
       router.push("/management");
     }

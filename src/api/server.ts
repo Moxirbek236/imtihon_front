@@ -9,7 +9,7 @@ export async function serverFetch(endpoint: string, options: RequestInit = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { "Cookie": `token=${token}` } : {}),
+      ...(token ? { "Cookie": `token=${token}`, "Authorization": `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
