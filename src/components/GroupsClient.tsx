@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Avatar,
   Box,
@@ -112,8 +112,9 @@ function getDays(days) {
     .join(", ");
 }
 
-export default function GroupsClient({ initialGroups, initialPagination, searchParams, statusFilter }) {
+export default function GroupsClient({ initialGroups, initialPagination, statusFilter }) {
   const router = useRouter();
+  const urlSearchParams = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [groups, setGroups] = useState(initialGroups || []);
   const [courses, setCourses] = useState<any[]>([]);
@@ -127,9 +128,9 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
   const [form, setForm] = useState(initialForm);
   const [alert, setAlert] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({ open: false, message: "", severity: "error" });
   
-  const [page, setPage] = useState(initialPagination?.currentPage || 1);
+  const [page, setPage] = useState(() => Number(urlSearchParams.get("page")) || initialPagination?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
-  const [searchQuery, setSearchQuery] = useState(searchParams?.search || "");
+  const [searchQuery, setSearchQuery] = useState(() => urlSearchParams.get("search") || "");
   const [editId, setEditId] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -236,12 +237,18 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery !== (searchParams?.search || "") || page !== (Number(searchParams?.page) || 1)) {
-        router.push(`?page=${page}&search=${searchQuery}&status=${statusFilter || 'active'}`);
+      const nextQuery = new URLSearchParams({
+        page: String(page),
+        search: searchQuery,
+        status: statusFilter || "active",
+      }).toString();
+
+      if (urlSearchParams.toString() !== nextQuery) {
+        router.replace(`?${nextQuery}`);
       }
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [page, searchQuery, router, searchParams, statusFilter]);
+  }, [page, searchQuery, statusFilter, router, urlSearchParams]);
 
   const stats = useMemo(() => {
     const uniqueTeacherIds = new Set();
@@ -629,7 +636,7 @@ export default function GroupsClient({ initialGroups, initialPagination, searchP
               return (
                 <Box
                   key={group.id}
-                  onClick={() => router.push(`/management/groups/${group.id}`)}
+                  onClick={() => router.push(`/dashboard/groups/${group.id}`)}
                   sx={{
                     display: "grid",
                     gridTemplateColumns: "100px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 42px",

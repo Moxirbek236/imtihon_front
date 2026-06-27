@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,8 @@ import Image from "next/image";
 import loginImg from '../assets/study.svg';
 import logoImg from '../assets/image.png';
 import axiosClient from "../api/axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getHomeRouteForRole, parseLoginResponse, persistAuthSession } from "@/lib/routes";
 
 export default function Login() {
   const [login, setLogin] = useState("");
@@ -35,6 +36,13 @@ export default function Login() {
   });
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Eski cookie'lardan qolgan redirect loop'ni tozalash
+  useEffect(() => {
+    document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
+  }, []);
 
   const showAlert = (message: string, severity: "success" | "error" | "warning" | "info" = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -57,34 +65,24 @@ export default function Login() {
         password,
       });
 
-      if (res.data.success) {
-        // Backend 'accessToken' qaytaradi (AuthResult interface)
-        const token = res.data.accessToken || res.data.token;
-        const role = res.data.role;
+      const { token, role, user, success } = parseLoginResponse(res.data);
 
-        // Token va rolni localStorage va cookie ga yozish (navigate dan OLDIN)
-        if (token) {
-          localStorage.setItem("token", token);
-          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
-        }
-        if (role) {
-          localStorage.setItem("role", role);
-        }
+      if (success && token) {
+        persistAuthSession(token, role, user);
 
         setError("");
         showAlert("Muvaffaqiyatli kirdingiz! Yo'naltirilmoqda...", "success");
 
-        // Token yozilgandan keyin navigatsiya qilish
-        setTimeout(() => {
-          const userRole = role || localStorage.getItem("role");
-          if (userRole === "TEACHER") {
-            router.push("/dashboard/groups");
-          } else if (userRole === "STUDENT") {
-            router.push("/dashboard/my-groups");
-          } else {
-            router.push("/dashboard");
-          }
-        }, 2000);
+        const nextPath = searchParams.get("next");
+        const destination =
+          nextPath && nextPath.startsWith("/") && !nextPath.startsWith("/login")
+            ? nextPath
+            : getHomeRouteForRole(role);
+
+        router.replace(destination);
+      } else {
+        setError("Login muvaffaqiyatsiz. Token qaytmadi.");
+        showAlert("Login muvaffaqiyatsiz. Token qaytmadi.", "error");
       }
     } catch (err) {
       const message =

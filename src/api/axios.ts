@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAuthSession } from '@/lib/routes';
 
 const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -19,16 +20,37 @@ axiosClient.interceptors.request.use(
   }
 );
 
+function shouldForceLogin(error: { response?: { status?: number; data?: { message?: string } }; config?: { headers?: { Authorization?: string } } }) {
+  if (error.response?.status !== 401) return false;
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (!token) return true;
+
+  const message = String(error.response?.data?.message || "").toLowerCase();
+  const tokenWasSent = !!error.config?.headers?.Authorization;
+
+  if (!tokenWasSent) return false;
+
+  return (
+    message.includes("expired") ||
+    message.includes("invalid token") ||
+    message.includes("jwt")
+  );
+}
+
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      document.cookie = "token=; path=/; max-age=0";
-      window.location.href = "/login";
+    const requestUrl = String(error.config?.url || "");
+    if (requestUrl.includes("/auth/login")) {
+      return Promise.reject(error);
+    }
+
+    if (shouldForceLogin(error)) {
+      clearAuthSession();
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.replace("/login");
+      }
     }
     return Promise.reject(error);
   }

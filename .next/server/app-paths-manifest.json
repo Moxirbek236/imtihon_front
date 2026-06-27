@@ -1,20 +1,9 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
-  "/dashboard/groups/page": "app/dashboard/groups/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js",
-  "/dashboard/my-groups/[id]/page": "app/dashboard/my-groups/[id]/page.js",
-  "/forgot-password/page": "app/forgot-password/page.js",
-  "/dashboard/rooms/page": "app/dashboard/rooms/page.js",
-  "/dashboard/students/page": "app/dashboard/students/page.js",
-  "/dashboard/course/page": "app/dashboard/course/page.js",
   "/login/page": "app/login/page.js",
   "/dashboard/teachers/page": "app/dashboard/teachers/page.js",
-  "/management/rooms/page": "app/management/rooms/page.js",
-  "/management/page": "app/management/page.js",
-  "/management/course/page": "app/management/course/page.js",
+  "/dashboard/groups/[id]/page": "app/dashboard/groups/[id]/page.js",
+  "/dashboard/groups/page": "app/dashboard/groups/page.js",
   "/page": "app/page.js",
-  "/dashboard/profile/page": "app/dashboard/profile/page.js",
-  "/management/teachers/page": "app/management/teachers/page.js"
+  "/dashboard/students/page": "app/dashboard/students/page.js",
+  "/dashboard/my-groups/page": "app/dashboard/my-groups/page.js"
 }

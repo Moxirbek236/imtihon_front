@@ -15,6 +15,20 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter();
 
+  const isPublicRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname === "/";
+
+  useEffect(() => {
+    if (isPublicRoute) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.replace("/login");
+    }
+  }, [isPublicRoute, pathname, router]);
+
   // Determine active sidebar item from URL
   let activeItem = "home";
   if (pathname.startsWith("/management") || pathname.includes("/course") || pathname.includes("/rooms")) {
@@ -75,7 +89,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   };
 
   // Don't show layout on login or forgot-password
-  if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname === "/") {
+  if (isPublicRoute) {
     return <>{children}</>;
   }
 

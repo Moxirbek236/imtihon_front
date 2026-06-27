@@ -28,6 +28,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
+import { clearAuthSession } from "@/lib/routes";
 
 export default function Header({ darkMode, onToggleTheme }) {
   const [anchorEl, setAnchorEl] = useState<any>(null);
@@ -55,9 +56,7 @@ export default function Header({ darkMode, onToggleTheme }) {
     } catch (e) {
       console.log("Logout failed on server", e);
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    document.cookie = "token=; path=/; max-age=0";
+    clearAuthSession();
     handleClose();
     router.push("/login");
   };
