@@ -195,7 +195,7 @@ export default function Login() {
             <TextField
               fullWidth
               label="Login"
-              placeholder="Loginni kiriting"
+              placeholder="+99890 123 45 67"
               variant="outlined"
               size="small"
               value={login}

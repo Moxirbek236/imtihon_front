@@ -50,7 +50,7 @@ export default function AdminRating() {
         const resCr = await axiosClient.get("/courses");
         if (resCr.data?.success) setCourses(resCr.data.data);
 
-        const resG = await axiosClient.get("/groups?limit=1000");
+        const resG = await axiosClient.get("/groups?page=1&limit=20");
         if (resG.data?.success) setGroups(resG.data.data);
       } catch (e) {
         console.error(e);

@@ -83,7 +83,8 @@ export default function DashboardHome() {
       const res = await axiosClient.get("/dashboard/stats");
       return res.data;
     },
-    staleTime: 60000,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 
   const data = response?.data;

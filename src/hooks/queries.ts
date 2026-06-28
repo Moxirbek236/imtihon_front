@@ -7,7 +7,9 @@ export const useGroups = () => {
   return useQuery({
     queryKey: ['groups', role],
     queryFn: () => groupsApi.list(role),
-    enabled: !!role, // Only run if role is loaded
+    enabled: !!role,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };
 
@@ -16,6 +18,8 @@ export const useGroupDetails = (groupId: string) => {
     queryKey: ['group', groupId],
     queryFn: () => groupsApi.getOne(groupId),
     enabled: !!groupId,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };
 
@@ -25,6 +29,8 @@ export const useGroupStudents = (groupId: string) => {
     queryKey: ['group-students', groupId, role],
     queryFn: () => groupsApi.getStudents(groupId, role),
     enabled: !!groupId && !!role,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };
 
@@ -34,6 +40,8 @@ export const useGroupTeachers = (groupId: string) => {
     queryKey: ['group-teachers', groupId, role],
     queryFn: () => groupsApi.getTeachers(groupId, role),
     enabled: !!groupId && !!role,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };
 
@@ -43,6 +51,8 @@ export const useLessons = (groupId: string) => {
     queryKey: ['lessons', groupId, role],
     queryFn: () => lessonsApi.list(groupId, role),
     enabled: !!groupId && !!role,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };
 
@@ -76,5 +86,7 @@ export const useProfile = () => {
     queryKey: ['profile', role],
     queryFn: () => profileApi.get(role),
     enabled: !!role,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 };

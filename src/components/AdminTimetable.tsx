@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axiosClient from "../api/axios";
 
 // Helper to convert time strings like "10:30" to minutes since 00:00
@@ -36,6 +38,7 @@ const months = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avg
 const days = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 
 export default function AdminTimetable() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [dayFilter, setDayFilter] = useState("Toq kunlar"); // Toq kunlar | Juft kunlar | Boshqalar
 
@@ -45,7 +48,8 @@ export default function AdminTimetable() {
       const res = await axiosClient.get("/dashboard/timetable");
       return res.data;
     },
-    staleTime: 60000,
+    staleTime: 30_000,
+    refetchOnMount: false,
   });
 
   const data = timetableRes?.data || [];
@@ -184,19 +188,19 @@ export default function AdminTimetable() {
                                   .map((g: any) => {
                                     const styles = getPositionStyles(g.startTime, g.durationMinut);
                                     return (
-                                      <a key={g.id} href={`/dashboard/groups/${g.id}`}>
-                                        <div 
-                                          className="absolute rounded-md p-2 border border-gray-200 shadow-sm transition-transform hover:scale-[1.01]" 
-                                          style={{ ...styles, opacity: 0.95, backgroundColor: g.color || "#7c3aed" }}
-                                        >
-                                          <div className="flex items-start justify-between h-full">
-                                            <div className="flex-1 min-w-0">
-                                              <div className="text-xs font-medium text-gray-200 truncate">{g.name}</div>
-                                              <div className="text-[10px] text-gray-300 font-bold truncate">{g.courseName}</div>
-                                            </div>
+                                      <Link
+                                        key={g.id}
+                                        href={`/dashboard/groups/${g.id}`}
+                                        className="absolute rounded-md p-2 border border-gray-200 shadow-sm transition-transform hover:scale-[1.01]"
+                                        style={{ ...styles, opacity: 0.95, backgroundColor: g.color || "#7c3aed", textDecoration: "none" }}
+                                      >
+                                        <div className="flex items-start justify-between h-full">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-medium text-gray-200 truncate">{g.name}</div>
+                                            <div className="text-[10px] text-gray-300 font-bold truncate">{g.courseName}</div>
                                           </div>
                                         </div>
-                                      </a>
+                                      </Link>
                                     );
                                   })}
                               </div>
