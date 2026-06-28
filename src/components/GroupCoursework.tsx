@@ -43,10 +43,10 @@ export default function GroupCoursework() {
     enabled: subTabValue === 0,
   });
 
-  const { data: attendanceRes, isLoading: loadingAttendance } = useQuery({
-    queryKey: ["attendances", id],
+  const { data: groupVideosRes, isLoading: loadingVideos } = useQuery({
+    queryKey: ["groupVideos", id],
     queryFn: async () => {
-      const res = await axiosClient.get(`/attendances?groupId=${id}`);
+      const res = await axiosClient.get(`/videos/group/${id}`);
       return res.data;
     },
     enabled: subTabValue === 1,
@@ -62,7 +62,7 @@ export default function GroupCoursework() {
   });
 
   const homeworkData = homeworkRes?.data || [];
-  const attendanceData = attendanceRes?.data || [];
+  // const attendanceData = attendanceRes?.data || [];
   const examsData = examsRes?.data || [];
 
   // Video watch modal
@@ -106,16 +106,7 @@ export default function GroupCoursework() {
     handleMenuClose();
   };
 
-  const [expandedLessonId, setExpandedLessonId] = useState<number | null>(null);
-  const { data: lessonVideosRes, isLoading: loadingVideos } = useQuery({
-    queryKey: ["lessonVideos", expandedLessonId],
-    queryFn: async () => {
-      const res = await axiosClient.get(`/videos?lessonId=${expandedLessonId}`);
-      return res.data;
-    },
-    enabled: !!expandedLessonId,
-  });
-  const lessonVideosData = lessonVideosRes?.data || [];
+  const lessonVideosData = groupVideosRes?.data || [];
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";

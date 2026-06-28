@@ -305,10 +305,10 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
       <Box sx={{ width: { xs: "100%", md: 300 }, flexShrink: 0, p: 2, overflowY: "auto", borderLeft: "1px solid #e5e7eb", bgcolor: "white" }}>
         {sidebarLessons.map((l: any) => (
           <SidebarLessonItem
-            key={l.id}
+            key={`${l.type}-${l.id}`}
             lesson={l}
             groupId={groupId}
-            isActive={l.id === Number(lessonId)}
+            isActive={l.type === "lesson" && l.id === Number(lessonId)}
             currentVideo={currentVideo}
             setCurrentVideo={setCurrentVideo}
             router={router}
@@ -358,7 +358,9 @@ function SubmissionInput({ comment, setComment, selectedFiles, handleFileChange,
 
 function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrentVideo, router, groupVideos }: any) {
   const [expanded, setExpanded] = useState(isActive);
-  const videos = groupVideos?.filter((v: any) => v.lesson_id === lesson.id) || [];
+  const videos = lesson.type === "lesson"
+    ? (groupVideos?.filter((v: any) => v.lesson_id === lesson.id) || [])
+    : [];
 
   useEffect(() => {
     if (isActive) {
@@ -369,7 +371,11 @@ function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrent
   const toggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent navigation
     if (!isActive) {
-      router.push(`/dashboard/my-groups/${groupId}/lessons/${lesson.id}`);
+      if (lesson.type === "exam") {
+        router.push(`/dashboard/my-groups/${groupId}/exams/${lesson.id}`);
+      } else {
+        router.push(`/dashboard/my-groups/${groupId}/lessons/${lesson.id}`);
+      }
     } else {
       setExpanded(!expanded);
     }
