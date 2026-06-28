@@ -11,6 +11,21 @@ node_modules
 dist
 dist-ssr
 *.local
+.next
+.next/
+.next/cache/
+.next/cache/webpack/
+
+# remote: Resolving deltas: 100% (130/130), completed with 69 local objects.
+# remote: error: Trace: 7246fad8de4d0e1910fbc14b47d7aa9c6d49934107831c756cbb793d0ccb2d1d
+# remote: error: See https://gh.io/lfs for more information.
+# remote: error: File .next/cache/webpack/server-production/0.pack is 115.26 MB; this exceeds GitHub's file size limit of 100.00 MB
+# remote: error: File .next/cache/webpack/client-production/0.pack is 102.57 MB; this exceeds GitHub's file size limit of 100.00 MB
+# remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.     
+# To https://github.com/Moxirbek236/imtihon_front.git
+#  ! [remote rejected] main -> main (pre-receive hook declined)
+# error: failed to push some refs to 'https://github.com/Moxirbek236/imtihon_front.git'
+# fix it
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +37,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.next/

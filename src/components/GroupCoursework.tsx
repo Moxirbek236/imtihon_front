@@ -5,6 +5,7 @@ import axiosClient from "../api/axios";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import VideoUploadModal from "./VideoUploadModal";
+import ExamModal from "./ExamModal";
 import {
   Box,
   Typography,
@@ -70,6 +71,7 @@ export default function GroupCoursework() {
 
   // Video yuklash modal
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [examModalOpen, setExamModalOpen] = useState(false);
 
   // Harakatlar (Actions) menyusi holati
   const [anchorEl, setAnchorEl] = useState<any>(null);
@@ -168,7 +170,7 @@ export default function GroupCoursework() {
           </Typography>
 
           <Box sx={{ display: "flex", bgcolor: "#f3f4f6", p: 0.5, borderRadius: 2, gap: 0.5 }}>
-            {["Uy ishlari", "Davomat", "Imtihonlar"].map((label, idx) => (
+            {["Uy ishlari", "Videolar", "Imtihonlar"].map((label, idx) => (
               <Button
                 key={idx}
                 onClick={() => setSubTabValue(idx)}
@@ -198,18 +200,20 @@ export default function GroupCoursework() {
           onClick={() => {
             if (subTabValue === 0) {
               router.push(`/dashboard/groups/${id}/homework/create`);
+            } else if (subTabValue === 1) {
+              setUploadModalOpen(true);
             } else if (subTabValue === 2) {
-              // TODO: Exams add
+              setExamModalOpen(true);
             }
           }}
           sx={{
-            bgcolor: "#10b981",
+            bgcolor: "#7c3aed",
             textTransform: "none",
             fontSize: 13,
             fontWeight: 600,
             px: 3,
             borderRadius: 2,
-            "&:hover": { bgcolor: "#059669" },
+            "&:hover": { bgcolor: "#6d28d9" },
           }}
         >
           Qo'shish
@@ -399,47 +403,6 @@ export default function GroupCoursework() {
         </Paper>
       )}
 
-      {/* ===== DAVOMAT ===== */}
-      {subTabValue === 1 && (
-        <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
-          <Box sx={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>#</th>
-                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>Dars Sana</th>
-                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600 }}>O'quvchi</th>
-                  <th style={{ padding: "16px", color: "#94a3b8", fontSize: "12px", fontWeight: 600, textAlign: "center" }}>Holati</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loadingAttendance ? (
-                  <tr><td colSpan={4} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Yuklanmoqda...</td></tr>
-                ) : attendanceData.length === 0 ? (
-                  <tr><td colSpan={4} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Davomat yo'q</td></tr>
-                ) : (
-                  attendanceData.map((row: any, idx: number) => (
-                    <tr key={row.id || idx} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                      <td style={{ padding: "16px", fontSize: "13px" }}>{idx + 1}</td>
-                      <td style={{ padding: "16px", fontSize: "13px" }}>{formatDate(row.date)}</td>
-                      <td style={{ padding: "16px", fontSize: "13px" }}>{row.student?.full_name}</td>
-                      <td style={{ padding: "16px", fontSize: "13px", textAlign: "center" }}>
-                        <span style={{
-                          padding: "4px 8px", borderRadius: "12px", fontSize: "12px",
-                          backgroundColor: row.status === 'present' ? '#dcfce7' : '#fee2e2',
-                          color: row.status === 'present' ? '#16a34a' : '#ef4444'
-                        }}>
-                          {row.status === 'present' ? 'Kelgan' : 'Kelmagan'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </Box>
-        </Paper>
-      )}
 
       {/* ===== IMTIHONLAR ===== */}
       {subTabValue === 2 && (
@@ -690,6 +653,28 @@ export default function GroupCoursework() {
           O'chirish
         </MenuItem>
       </Menu>
+
+      <VideoUploadModal
+        open={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        groupId={Number(id)}
+        onSuccess={() => {
+          setUploadModalOpen(false);
+          // @ts-ignore
+          queryClient.invalidateQueries({ queryKey: ["lesson_videos", id] });
+        }}
+      />
+
+      <ExamModal
+        open={examModalOpen}
+        onClose={() => setExamModalOpen(false)}
+        groupId={Number(id)}
+        onSuccess={() => {
+          setExamModalOpen(false);
+          // @ts-ignore
+          queryClient.invalidateQueries({ queryKey: ["exams", id] });
+        }}
+      />
     </Box>
   );
 }

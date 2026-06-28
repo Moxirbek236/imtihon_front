@@ -787,12 +787,16 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                   </Typography>
 
                   <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <IconButton onClick={(e) => { e.stopPropagation(); setDeleteId(group.id); setIsDeleteDialogOpen(true); }} size="small" sx={{ color: "#6b7280" }}>
-                      <Delete sx={{ fontSize: 18 }} />
-                    </IconButton>
-                    <IconButton onClick={(e) => { e.stopPropagation(); handleEditOpen(group); }} size="small" sx={{ color: "#7c3aed" }}>
-                      <Edit sx={{ fontSize: 18 }} />
-                    </IconButton>
+                    {currentRole !== "TEACHER" && currentRole !== "STUDENT" && (
+                      <>
+                        <IconButton onClick={(e) => { e.stopPropagation(); setDeleteId(group.id); setIsDeleteDialogOpen(true); }} size="small" sx={{ color: "#6b7280" }}>
+                          <Delete sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton onClick={(e) => { e.stopPropagation(); handleEditOpen(group); }} size="small" sx={{ color: "#7c3aed" }}>
+                          <Edit sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </>
+                    )}
                   </Box>
                 </Box>
               );
