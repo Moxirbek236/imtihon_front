@@ -142,7 +142,12 @@ export default function StudentMyGroups() {
                 {displayedGroups.map((group, index) => (
                   <Box
                     key={group.id}
-                    onClick={() => router.push(`/dashboard/my-groups/${group.id}`)}
+                    component="a"
+                    href={`/dashboard/my-groups/${group.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      router.push(`/dashboard/my-groups/${group.id}`);
+                    }}
                     sx={{
                       display: "grid",
                       gridTemplateColumns: "60px 2fr 2fr 1fr 1fr",
@@ -151,6 +156,8 @@ export default function StudentMyGroups() {
                       px: 2,
                       borderBottom: "1px solid #e5e7eb",
                       cursor: "pointer",
+                      textDecoration: "none",
+                      color: "inherit",
                       "&:hover": { bgcolor: "#fafafa" },
                       "&:last-child": {
                         borderBottom: "none"

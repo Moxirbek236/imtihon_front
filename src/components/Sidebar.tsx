@@ -49,11 +49,12 @@ const navItems = [
 
 export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }) {
   const [guruhlarOpen, setGuruhlarOpen] = useState(true);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(() => typeof window !== 'undefined' ? localStorage.getItem("role") : null);
 
   useEffect(() => {
-    setRole(localStorage.getItem("role"));
-  }, []);
+    const r = localStorage.getItem("role");
+    if (r && r !== role) setRole(r);
+  }, [role]);
 
   if (role === "TEACHER") {
     return (

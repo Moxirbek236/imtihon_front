@@ -14,6 +14,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [managementOpen, setManagementOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [roleChecked, setRoleChecked] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -24,7 +25,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname === "/";
 
   useEffect(() => {
-    // Backendni "uyg'oq" ushlab turish uchun har 1 daqiqada ping
     const interval = setInterval(() => {
       axiosClient.get("/health").catch(() => {});
     }, 60000);
@@ -33,7 +33,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     setMounted(true);
-    if (isPublicRoute) return;
+    if (isPublicRoute) {
+      setRoleChecked(true);
+      return;
+    }
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -62,17 +65,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         return;
       }
     }
+    
+    setRoleChecked(true);
   }, [isPublicRoute, pathname, router]);
 
-  // Close management panel when navigating to non-management pages
   useEffect(() => {
     if (!pathname.startsWith("/management")) {
       setManagementOpen(false);
     }
   }, [pathname]);
 
-  if (!mounted) {
-    return null;
+  if (!mounted || !roleChecked) {
+    return (
+      <Box sx={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
+      </Box>
+    );
   }
 
   // Determine active sidebar item from URL

@@ -641,7 +641,12 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
               return (
                 <Box
                   key={group.id}
-                  onClick={() => router.push(`/dashboard/groups/${group.id}`)}
+                  component="a"
+                  href={`/dashboard/groups/${group.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push(`/dashboard/groups/${group.id}`);
+                  }}
                   sx={{
                     display: "grid",
                     gridTemplateColumns: "100px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 42px",
@@ -650,6 +655,8 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
                     px: 1.8,
                     borderBottom: "1px solid #f3f4f6",
                     cursor: "pointer",
+                    textDecoration: "none",
+                    color: "inherit",
                     "&:hover": { bgcolor: "#fafafa" },
                   }}
                 >

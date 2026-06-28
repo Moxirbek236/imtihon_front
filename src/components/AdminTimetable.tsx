@@ -1,161 +1,219 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
-  Chip,
-  Tooltip
-} from "@mui/material";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "../api/axios";
 
-// Standard time slots for the CRM
-const TIME_SLOTS = [
-  "08:00",
-  "10:00",
-  "12:00",
-  "14:00",
-  "16:00",
-  "18:00",
-  "20:00"
-];
+// Helper to convert time strings like "10:30" to minutes since 00:00
+const timeToMinutes = (timeStr: string) => {
+  if (!timeStr) return 0;
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const TIMELINE_START = 10 * 60; // 10:00
+const TIMELINE_END = 17 * 60;   // 17:00
+const TOTAL_MINUTES = TIMELINE_END - TIMELINE_START;
+
+const getPositionStyles = (startTimeStr: string, durationMinut: number) => {
+  const startMins = timeToMinutes(startTimeStr);
+  
+  const offsetMins = Math.max(0, startMins - TIMELINE_START);
+  const left = (offsetMins / TOTAL_MINUTES) * 100;
+  
+  const visibleDuration = startMins < TIMELINE_START ? durationMinut - (TIMELINE_START - startMins) : durationMinut;
+  const width = (visibleDuration / TOTAL_MINUTES) * 100;
+
+  return {
+    left: `${Math.min(100, Math.max(0, left))}%`,
+    width: `${Math.min(100 - left, Math.max(0, width))}%`,
+    top: "4px",
+    bottom: "4px",
+  };
+};
+
+const months = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
+const days = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 
 export default function AdminTimetable() {
-  const { data: roomsRes, isLoading: loadingRooms } = useQuery({
-    queryKey: ["rooms", "schedule"],
+  const [isOpen, setIsOpen] = useState(true);
+  const [dayFilter, setDayFilter] = useState("Toq kunlar"); // Toq kunlar | Juft kunlar | Boshqalar
+
+  const { data: timetableRes, isLoading } = useQuery({
+    queryKey: ["dashboard-timetable"],
     queryFn: async () => {
-      const res = await axiosClient.get("/rooms");
+      const res = await axiosClient.get("/dashboard/timetable");
       return res.data;
     },
     staleTime: 60000,
   });
 
-  const { data: groupsRes, isLoading: loadingGroups } = useQuery({
-    queryKey: ["groups", "schedule"],
-    queryFn: async () => {
-      const res = await axiosClient.get("/groups?limit=1000");
-      return res.data;
-    },
-    staleTime: 60000,
+  const data = timetableRes?.data || [];
+  
+  const today = new Date();
+  const currentMonthName = months[today.getMonth()];
+  const currentDay = today.getDate();
+  const currentYear = today.getFullYear();
+  const currentWeekDay = days[today.getDay()];
+
+  // Filter groups
+  const filteredData = data.filter((group: any) => {
+    const w = group.week_day || [];
+    const isToq = w.includes("Monday") || w.includes("Wednesday") || w.includes("Friday");
+    const isJuft = w.includes("Tuesday") || w.includes("Thursday") || w.includes("Saturday");
+    
+    if (dayFilter === "Toq kunlar") return isToq;
+    if (dayFilter === "Juft kunlar") return isJuft && !isToq;
+    if (dayFilter === "Boshqalar") return !isToq && !isJuft;
+    return true;
   });
 
-  const loading = loadingRooms || loadingGroups;
-  const rooms = roomsRes?.data || [];
-  const groups = groupsRes?.data || [];
-
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // Map groups by room and time
-  const getGroupForSlot = (roomName: string, timeSlot: string) => {
-    // Basic mapping logic: check if group belongs to room and its start_time matches
-    return groups.filter(g => g.rooms === roomName && g.start_time?.startsWith(timeSlot));
-  };
+  // Extract unique rooms from filtered data
+  const uniqueRooms = Array.from(
+    new Map(filteredData.filter((g: any) => g.room).map((item: any) => [item.room.id, item.room])).values()
+  );
 
   return (
-    <Box sx={{ width: "100%", bgcolor: "white", borderRadius: 3, p: 3, boxShadow: "0 2px 10px rgba(0,0,0,0.02)" }}>
-      <Typography sx={{ fontSize: 20, fontWeight: 700, mb: 1, color: "#111827" }}>
-        Dars Jadvali
-      </Typography>
-      <Typography sx={{ fontSize: 13, color: "#6b7280", mb: 3 }}>
-        Joriy barcha guruhlar soatlar va xonalar bo'yicha
-      </Typography>
+    <div className="w-full min-w-0 overflow-hidden">
+      <div className="min-h-auto bg-gray-50 dark:bg-background">
+        <div className="mx-auto bg-white dark:bg-card rounded-lg shadow-sm p-3">
+          <div data-slot="accordion" className="w-full" data-orientation="vertical">
+            <div data-state={isOpen ? "open" : "closed"} data-orientation="vertical" data-slot="accordion-item">
+              <h3 data-orientation="vertical" data-state={isOpen ? "open" : "closed"} className="flex">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(!isOpen)}
+                  aria-expanded={isOpen}
+                  data-state={isOpen ? "open" : "closed"}
+                  data-orientation="vertical"
+                  data-slot="accordion-trigger"
+                  className="focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md text-left text-sm font-medium transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180 w-full px-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">Dars jadvali</h1>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down text-muted-foreground pointer-events-none size-6 mr-5 translate-y-0.5 shrink-0 transition-transform duration-200" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6"></path>
+                  </svg>
+                </button>
+              </h3>
+              
+              <div 
+                data-state={isOpen ? "open" : "closed"} 
+                role="region" 
+                data-orientation="vertical" 
+                data-slot="accordion-content" 
+                className="overflow-hidden text-sm transition-all"
+                style={{ display: isOpen ? "block" : "none" }}
+              >
+                <div className="pt-0 pb-4">
+                  
+                  {/* Header tools */}
+                  <div className="p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+                      <div className="text-center rounded-[8px] shadow-sm min-w-[45px] sm:min-w-[50px]">
+                        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800 px-2 sm:px-3 py-1">{currentMonthName}</div>
+                        <div className="text-base sm:text-[18px] font-bold text-indigo-600">{currentDay}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{currentMonthName} {currentYear}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{currentWeekDay}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                      <div className="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
+                        {["Toq kunlar", "Juft kunlar", "Boshqalar"].map((f) => (
+                          <button 
+                            key={f}
+                            onClick={() => setDayFilter(f)}
+                            className={`flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${dayFilter === f ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm" : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"}`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-      <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e5e7eb", borderRadius: 2 }}>
-        <Table sx={{ minWidth: 800 }}>
-          <TableHead sx={{ bgcolor: "#f9fafb" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, color: "#4b5563", borderRight: "1px solid #e5e7eb", width: 100 }}>
-                Xona / Vaqt
-              </TableCell>
-              {TIME_SLOTS.map(time => (
-                <TableCell key={time} align="center" sx={{ fontWeight: 700, color: "#4b5563", minWidth: 140 }}>
-                  {time}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rooms.map(room => (
-              <TableRow key={room.id}>
-                <TableCell sx={{ fontWeight: 600, borderRight: "1px solid #e5e7eb", bgcolor: "#f9fafb" }}>
-                  {room.name}
-                  <Typography sx={{ fontSize: 11, color: "#6b7280", mt: 0.5 }}>
-                    Sig'im: {room.capacity}
-                  </Typography>
-                </TableCell>
-                {TIME_SLOTS.map(time => {
-                  const slotGroups = getGroupForSlot(room.name, time);
-                  return (
-                    <TableCell key={`${room.id}-${time}`} align="center" sx={{ p: 1, verticalAlign: "top" }}>
-                      {slotGroups.length > 0 ? (
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                          {slotGroups.map(g => (
-                            <Tooltip 
-                              key={g.id}
-                              title={`${g.week_day?.join(", ")} | O'qituvchi: ${g.teachers?.[0]?.full_name || 'Yo\'q'}`} 
-                              arrow
-                            >
-                              <Box 
-                                sx={{ 
-                                  bgcolor: g.status === 'active' ? "#f0fdfa" : "#fef2f2", 
-                                  border: `1px solid ${g.status === 'active' ? "#ccfbf1" : "#fee2e2"}`,
-                                  p: 1, 
-                                  borderRadius: 1.5,
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  transition: "all 0.2s",
-                                  "&:hover": { boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }
-                                }}
-                              >
-                                <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#0f766e" }}>
-                                  {g.name}
-                                </Typography>
-                                <Typography sx={{ fontSize: 11, color: "#0d9488", mt: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                  {g.course?.name}
-                                </Typography>
-                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1 }}>
-                                  <Typography sx={{ fontSize: 10, color: "#64748b" }}>
-                                    {g.student_count} / {g.max_students}
-                                  </Typography>
-                                  <Chip label={g.status === 'active' ? 'Faol' : 'Tugagan'} size="small" sx={{ height: 16, fontSize: 9, bgcolor: g.status === 'active' ? "#14b8a6" : "#f87171", color: "white" }} />
-                                </Box>
-                              </Box>
-                            </Tooltip>
+                  <div className="p-3 border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      Tanlangan kun turi: <span className="font-medium text-indigo-600">{dayFilter}</span>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto md:overflow-x-scroll">
+                    <div className="inline-block min-w-full">
+                      
+                      {/* Timeline Header */}
+                      <div className="flex border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
+                        <div className="w-20 flex-shrink-0"></div>
+                        <div className="flex-1 flex">
+                          {["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"].map((time, idx) => (
+                            <div key={idx} className="flex-1 px-1 py-2 text-[10px] text-gray-600 dark:text-gray-300 text-start border-l dark:border-gray-800">
+                              {time}
+                            </div>
                           ))}
-                        </Box>
+                        </div>
+                      </div>
+
+                      {/* Rooms Timeline */}
+                      {isLoading ? (
+                        <div className="p-6 text-center text-gray-500">Yuklanmoqda...</div>
+                      ) : uniqueRooms.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500">Ushbu kunga darslar topilmadi</div>
                       ) : (
-                        <Typography sx={{ fontSize: 12, color: "#cbd5e1" }}>Bo'sh</Typography>
+                        uniqueRooms.map((room: any) => (
+                          <div key={room.id} className="flex border-b dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors relative" style={{ minHeight: "60px" }}>
+                            <div className="w-20 flex-shrink-0 px-3 py-3 border-r dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300">{room.name}</div>
+                            </div>
+                            <div className="flex-1 relative overflow-x-auto">
+                              
+                              {/* Background grid lines */}
+                              <div className="absolute inset-0 flex">
+                                {Array.from({ length: 15 }).map((_, i) => (
+                                  <div key={i} className="flex-1 border-l dark:border-gray-800"></div>
+                                ))}
+                              </div>
+                              
+                              {/* Group cards */}
+                              <div className="absolute inset-0 p-2">
+                                {filteredData
+                                  .filter((g: any) => g.room?.id === room.id)
+                                  .map((g: any) => {
+                                    const styles = getPositionStyles(g.startTime, g.durationMinut);
+                                    return (
+                                      <a key={g.id} href={`/dashboard/groups/${g.id}`}>
+                                        <div 
+                                          className="absolute rounded-md p-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-transform hover:scale-[1.01]" 
+                                          style={{ ...styles, opacity: 0.95, backgroundColor: g.color || "#026AA2" }}
+                                        >
+                                          <div className="flex items-start justify-between h-full">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="text-xs font-medium text-gray-200 truncate">{g.name}</div>
+                                              <div className="text-[10px] text-gray-300 font-bold truncate">{g.courseName}</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </a>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          </div>
+                        ))
                       )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-            {rooms.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={TIME_SLOTS.length + 1} align="center" sx={{ py: 4 }}>
-                  Xonalar mavjud emas
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
