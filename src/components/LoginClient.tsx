@@ -91,7 +91,7 @@ export default function Login() {
             ? nextPath
             : getHomeRouteForRole(role);
 
-        router.replace(destination);
+        window.location.href = destination;
       } else {
         setError("Login muvaffaqiyatsiz. Token qaytmadi.");
         showAlert("Login muvaffaqiyatsiz. Token qaytmadi.", "error");

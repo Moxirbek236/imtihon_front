@@ -63,10 +63,22 @@ export default function RoomsClient({ initialRooms, initialPagination, searchPar
     fetchBranches();
   }, []);
 
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      if (search !== (searchParams?.search || "") || page !== (Number(searchParams?.page) || 1)) {
+        router.push(`?page=${page}&search=${search}`);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [page, search, router, searchParams]);
+
   useEffect(() => {
     async function fetchRooms() {
       try {
-        const res = await axiosClient.get(`/rooms?limit=1000&page=${page}&search=${search}`);
+        const res = await axiosClient.get(`/rooms?limit=1000&page=${page}&search=${debouncedSearch}`);
         if (res.data?.success) {
           setRooms(res.data.data || []);
           setTotalPages(res.data.pagination?.totalPages || 1);
@@ -76,16 +88,7 @@ export default function RoomsClient({ initialRooms, initialPagination, searchPar
       }
     }
     fetchRooms();
-  }, [page, search]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (search !== (searchParams?.search || "") || page !== (Number(searchParams?.page) || 1)) {
-        router.push(`?page=${page}&search=${search}`);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [page, search, router, searchParams]);
+  }, [page, debouncedSearch]);
 
   const handleAddOpen = () => {
     setRoomName('');
@@ -328,6 +331,7 @@ export default function RoomsClient({ initialRooms, initialPagination, searchPar
               </Typography>
               <TextField
                 fullWidth
+                autoFocus
                 onChange={(e)=>setRoomName(e.target.value)}
                 value={roomName}
                 size="small"

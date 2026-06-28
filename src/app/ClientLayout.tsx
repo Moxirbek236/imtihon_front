@@ -44,15 +44,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const role = localStorage.getItem("role");
 
     if (role === "STUDENT") {
-      const allowedStudentRoutes = ["/dashboard", "/dashboard/my-groups", "/dashboard/payments", "/dashboard/metrics", "/dashboard/rating", "/dashboard/shop", "/dashboard/settings"];
-      const isAllowed = allowedStudentRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+      const allowedStudentRoutes = ["/dashboard/my-groups", "/dashboard/metrics", "/dashboard/shop", "/dashboard/settings"];
+      const isAllowed = allowedStudentRoutes.some(route => 
+        pathname === route || pathname.startsWith(route + "/")
+      );
       if (!isAllowed) {
         router.replace("/dashboard/my-groups");
         return;
       }
     } else if (role === "TEACHER") {
-      const allowedTeacherRoutes = ["/dashboard", "/dashboard/my-groups", "/dashboard/students", "/dashboard/rating", "/dashboard/settings", "/dashboard/groups"];
-      const isAllowed = allowedTeacherRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+      const allowedTeacherRoutes = ["/dashboard/groups", "/dashboard/my-groups", "/dashboard/students", "/dashboard/settings", "/dashboard/rating"];
+      const isAllowed = allowedTeacherRoutes.some(route => 
+        pathname === route || pathname.startsWith(route + "/")
+      );
       if (!isAllowed) {
         router.replace("/dashboard/my-groups");
         return;

@@ -238,7 +238,7 @@ export default function GroupInner({ id }) {
           }}
         >
           <Tab label="Ma'lumotlar" />
-          <Tab label="Guruh darsliklari" />
+          <Tab label="Uy ishlari va Baholash" />
           <Tab label="Akademik davomati" />
         </Tabs>
       </Box>

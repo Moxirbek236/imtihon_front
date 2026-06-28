@@ -33,22 +33,13 @@ export default function GroupCoursework() {
   const [subTabValue, setSubTabValue] = useState(0);
 
   // Queries
-  const { data: lessonsRes, isLoading: loadingLessons } = useQuery({
-    queryKey: ["lessons", id],
-    queryFn: async () => {
-      const res = await axiosClient.get(`/lessson?groupId=${id}`);
-      return res.data;
-    },
-    enabled: subTabValue === 0,
-  });
-
   const { data: homeworkRes, isLoading: loadingHomework } = useQuery({
     queryKey: ["homeworks", id],
     queryFn: async () => {
       const res = await axiosClient.get(`/home-works/group/${id}`);
       return res.data;
     },
-    enabled: subTabValue === 1,
+    enabled: subTabValue === 0,
   });
 
   const { data: attendanceRes, isLoading: loadingAttendance } = useQuery({
@@ -57,7 +48,7 @@ export default function GroupCoursework() {
       const res = await axiosClient.get(`/attendances?groupId=${id}`);
       return res.data;
     },
-    enabled: subTabValue === 2,
+    enabled: subTabValue === 1,
   });
 
   const { data: examsRes, isLoading: loadingExams } = useQuery({
@@ -66,10 +57,9 @@ export default function GroupCoursework() {
       const res = await axiosClient.get(`/exams/group/${id}`);
       return res.data;
     },
-    enabled: subTabValue === 3,
+    enabled: subTabValue === 2,
   });
 
-  const lessonsData = lessonsRes?.data || [];
   const homeworkData = homeworkRes?.data || [];
   const attendanceData = attendanceRes?.data || [];
   const examsData = examsRes?.data || [];
@@ -178,7 +168,7 @@ export default function GroupCoursework() {
           </Typography>
 
           <Box sx={{ display: "flex", bgcolor: "#f3f4f6", p: 0.5, borderRadius: 2, gap: 0.5 }}>
-            {["Darslar", "Uy ishlari", "Davomat", "Imtihonlar"].map((label, idx) => (
+            {["Uy ishlari", "Davomat", "Imtihonlar"].map((label, idx) => (
               <Button
                 key={idx}
                 onClick={() => setSubTabValue(idx)}
@@ -206,10 +196,10 @@ export default function GroupCoursework() {
         <Button
           variant="contained"
           onClick={() => {
-            if (subTabValue === 1) {
-              setUploadModalOpen(true);
-            } else {
+            if (subTabValue === 0) {
               router.push(`/dashboard/groups/${id}/homework/create`);
+            } else if (subTabValue === 2) {
+              // TODO: Exams add
             }
           }}
           sx={{
@@ -225,96 +215,11 @@ export default function GroupCoursework() {
           Qo'shish
         </Button>
 
-        {/* Video Upload Modal */}
-        <VideoUploadModal
-          open={uploadModalOpen}
-          onClose={() => setUploadModalOpen(false)}
-          groupId={id}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["lessons", id] });
-            queryClient.invalidateQueries({ queryKey: ["lessonVideos"] });
-          }}
-        />
+
       </Box>
 
-      {/* ===== DARSLAR ===== */}
-      {subTabValue === 0 && (
-        <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "transparent" }}>
-          {loadingLessons ? (
-            <Typography sx={{ p: 4, textAlign: "center", color: "#6b7280" }}>Yuklanmoqda...</Typography>
-          ) : lessonsData.length === 0 ? (
-            <Typography sx={{ p: 4, textAlign: "center", color: "#6b7280", bgcolor: "white", borderRadius: 3 }}>
-              Darslar mavjud emas
-            </Typography>
-          ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {lessonsData.map((lesson: any, idx: number) => (
-                <Paper key={lesson.id || idx} sx={{ p: 2, borderRadius: 3, border: "1px solid #e5e7eb", boxShadow: "none" }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Box>
-                      <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-                        {idx + 1}. {lesson.topic || "Mavzusiz"}
-                      </Typography>
-                      <Typography sx={{ fontSize: 13, color: "#6b7280", mt: 0.5 }}>
-                        Sana: {formatDate(lesson.date)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                      {lesson.hasVideo && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => setExpandedLessonId(expandedLessonId === lesson.id ? null : lesson.id)}
-                          sx={{ textTransform: "none", borderRadius: 2 }}
-                        >
-                          {expandedLessonId === lesson.id ? "Videolarni yopish" : "Videolarni ko'rish"}
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
-                  
-                  {expandedLessonId === lesson.id && lesson.hasVideo && (
-                    <Box sx={{ mt: 2, p: 2, bgcolor: "#f9fafb", borderRadius: 2, border: "1px solid #f3f4f6" }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 1 }}>Videolar:</Typography>
-                      {loadingVideos ? (
-                        <Typography sx={{ fontSize: 13, color: "#6b7280" }}>Yuklanmoqda...</Typography>
-                      ) : lessonVideosData.length === 0 ? (
-                        <Typography sx={{ fontSize: 13, color: "#6b7280" }}>Video topilmadi</Typography>
-                      ) : (
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                          {lessonVideosData.map((video: any, vIdx: number) => (
-                            <Box
-                              key={video.id || vIdx}
-                              onClick={() => handleFileClick(video)}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                p: 1,
-                                bgcolor: "white",
-                                borderRadius: 1,
-                                cursor: "pointer",
-                                "&:hover": { bgcolor: "#f3f4f6" }
-                              }}
-                            >
-                              <PlayCircleOutlined sx={{ fontSize: 18, color: "#3b82f6" }} />
-                              <Typography sx={{ fontSize: 13, color: "#3b82f6", fontWeight: 500 }}>
-                                {video.originalname || video.video_url}
-                              </Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      )}
-                    </Box>
-                  )}
-                </Paper>
-              ))}
-            </Box>
-          )}
-        </Paper>
-      )}
       {/* ===== UYGA VAZIFA ===== */}
-      {subTabValue === 1 && (
+      {subTabValue === 0 && (
         <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
           <Box sx={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -495,7 +400,7 @@ export default function GroupCoursework() {
       )}
 
       {/* ===== DAVOMAT ===== */}
-      {subTabValue === 2 && (
+      {subTabValue === 1 && (
         <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
           <Box sx={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -537,7 +442,7 @@ export default function GroupCoursework() {
       )}
 
       {/* ===== IMTIHONLAR ===== */}
-      {subTabValue === 3 && (
+      {subTabValue === 2 && (
         <Paper sx={{ borderRadius: 3, border: "none", boxShadow: "none", overflow: "hidden", bgcolor: "white" }}>
           <Box sx={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
