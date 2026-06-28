@@ -15,7 +15,10 @@ import {
   Menu,
   Typography,
   Divider,
+  Badge,
 } from "@mui/material";
+import { useTranslation } from "@/context/LanguageContext";
+import { useNotifications } from "@/context/NotificationContext";
 import {
   Search,
   CalendarToday,
@@ -31,10 +34,21 @@ import axiosClient from "../api/axios";
 import { clearAuthSession } from "@/lib/routes";
 
 export default function Header({ darkMode, onToggleTheme }) {
+  const { lang, changeLang, t } = useTranslation();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [anchorEl, setAnchorEl] = useState<any>(null);
+  const [notifAnchorEl, setNotifAnchorEl] = useState<any>(null);
   const [role, setRole] = useState<string>("A");
   const [avatarLetter, setAvatarLetter] = useState<string>("A");
   const router = useRouter();
+
+  const handleNotifClick = (event) => {
+    setNotifAnchorEl(event.currentTarget);
+  };
+
+  const handleNotifClose = () => {
+    setNotifAnchorEl(null);
+  };
 
   useEffect(() => {
     const r = localStorage.getItem("role") || "A";
@@ -124,7 +138,8 @@ export default function Header({ darkMode, onToggleTheme }) {
 
         {/* Lang */}
         <Select
-          value="O'zbekcha"
+          value={lang}
+          onChange={(e) => changeLang(e.target.value as any)}
           size="small"
           IconComponent={ExpandMore}
           sx={{
@@ -135,13 +150,89 @@ export default function Header({ darkMode, onToggleTheme }) {
             borderRadius: 2,
           }}
         >
-          <MenuItem value="O'zbekcha">O'zbekcha</MenuItem>
-          <MenuItem value="English">English</MenuItem>
+          <MenuItem value="uz">UZ</MenuItem>
+          <MenuItem value="ru">RU</MenuItem>
+          <MenuItem value="en">EN</MenuItem>
         </Select>
 
-        <IconButton size="small" sx={{ color: "#6b7280" }}>
-          <Notifications fontSize="small" />
+        <IconButton size="small" onClick={handleNotifClick} sx={{ color: "#6b7280" }}>
+          <Badge badgeContent={unreadCount} color="error" max={99}>
+            <Notifications fontSize="small" />
+          </Badge>
         </IconButton>
+
+        {/* Notifications Dropdown */}
+        <Menu
+          anchorEl={notifAnchorEl}
+          open={Boolean(notifAnchorEl)}
+          onClose={handleNotifClose}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          slotProps={{
+            paper: {
+              elevation: 0,
+              sx: {
+                overflow: "visible",
+                filter: "drop-shadow(0px 4px 20px rgba(0,0,0,0.12))",
+                mt: 1,
+                borderRadius: 2.5,
+                border: "1px solid #f3f4f6",
+                minWidth: 320,
+                maxWidth: 360,
+                maxHeight: 400,
+              },
+            },
+          }}
+        >
+          <Box sx={{ px: 2, py: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Typography sx={{ fontWeight: 700, fontSize: 15 }}>{t("notifications")}</Typography>
+            {unreadCount > 0 && (
+              <Button size="small" onClick={markAllAsRead} sx={{ textTransform: "none", fontSize: 12, fontWeight: 600, color: "#7c3aed" }}>
+                Barchasini o'qish
+              </Button>
+            )}
+          </Box>
+          <Divider />
+          <Box sx={{ overflowY: "auto", maxHeight: 320 }}>
+            {notifications.map((n) => (
+              <MenuItem
+                key={n.id}
+                onClick={() => {
+                  markAsRead(n.id);
+                  handleNotifClose();
+                }}
+                sx={{
+                  py: 1.2,
+                  px: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 0.5,
+                  bgcolor: n.read ? "transparent" : "#f5f3ff",
+                  borderBottom: "1px solid #f3f4f6",
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  "&:hover": { bgcolor: n.read ? "#f9fafb" : "#ede9fe" },
+                }}
+              >
+                <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>
+                  {n.title}
+                </Typography>
+                <Typography sx={{ fontSize: 12, color: "#4b5563" }}>
+                  {n.message}
+                </Typography>
+                <Typography sx={{ fontSize: 10, color: "#9ca3af", mt: 0.5 }}>
+                  {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Typography>
+              </MenuItem>
+            ))}
+            {notifications.length === 0 && (
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography sx={{ color: "#9ca3af", fontSize: 13.5 }}>{t("no_notifications")}</Typography>
+              </Box>
+            )}
+          </Box>
+        </Menu>
 
         <IconButton size="small" onClick={onToggleTheme} sx={{ color: "#6b7280" }}>
           {darkMode ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}

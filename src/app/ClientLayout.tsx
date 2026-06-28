@@ -8,6 +8,8 @@ import Sidebar from "../components/Sidebar";
 import ManagementPanel from "../components/ManagementPanel";
 
 import axiosClient from "../api/axios";
+import { LanguageProvider } from "../context/LanguageContext";
+import { NotificationProvider } from "../context/NotificationContext";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -23,6 +25,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith("/login") ||
     pathname.startsWith("/forgot-password") ||
     pathname === "/";
+
+  useEffect(() => {
+    const isDark = localStorage.getItem("theme") === "dark";
+    setDarkMode(isDark);
+  }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -154,57 +171,67 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   // Don't show layout on login or forgot-password
   if (isPublicRoute) {
-    return <>{children}</>;
+    return (
+      <LanguageProvider>
+        <NotificationProvider>
+          {children}
+        </NotificationProvider>
+      </LanguageProvider>
+    );
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        height: "100vh",
-        overflow: "hidden",
-        bgcolor: "#f3f4f6",
-      }}
-    >
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={handleSidebarToggle}
-        activeItem={activeItem}
-        onItemClick={handleItemClick}
-      />
-
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          overflow: "hidden",
-          minWidth: 0,
-        }}
-      >
-        <Header darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />
-
-        <Box sx={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
-          <ManagementPanel
-            open={managementOpen}
-            onClose={() => setManagementOpen(false)}
-            sidebarCollapsed={sidebarCollapsed}
-            onNavigate={handleManagementNavigate}
+    <LanguageProvider>
+      <NotificationProvider>
+        <Box
+          sx={{
+            display: "flex",
+            height: "100vh",
+            overflow: "hidden",
+            bgcolor: "#f3f4f6",
+          }}
+        >
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggle={handleSidebarToggle}
+            activeItem={activeItem}
+            onItemClick={handleItemClick}
           />
 
           <Box
-            component="main"
             sx={{
+              display: "flex",
+              flexDirection: "column",
               flex: 1,
-              overflowY: "auto",
-              bgcolor: "#f3f4f6",
-              transition: "margin-left 0.3s cubic-bezier(0.4,0,0.2,1)",
+              overflow: "hidden",
+              minWidth: 0,
             }}
           >
-            {children}
+            <Header darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />
+
+            <Box sx={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+              <ManagementPanel
+                open={managementOpen}
+                onClose={() => setManagementOpen(false)}
+                sidebarCollapsed={sidebarCollapsed}
+                onNavigate={handleManagementNavigate}
+              />
+
+              <Box
+                component="main"
+                sx={{
+                  flex: 1,
+                  overflowY: "auto",
+                  bgcolor: "#f3f4f6",
+                  transition: "margin-left 0.3s cubic-bezier(0.4,0,0.2,1)",
+                }}
+              >
+                {children}
+              </Box>
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </Box>
+      </NotificationProvider>
+    </LanguageProvider>
   );
 }
