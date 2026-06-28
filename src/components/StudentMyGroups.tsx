@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Tabs, Tab, Avatar, CircularProgress, Dialog, DialogContent } from "@mui/material";
+import { Box, Typography, Tabs, Tab, Avatar, CircularProgress, Dialog, DialogContent, Card } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
