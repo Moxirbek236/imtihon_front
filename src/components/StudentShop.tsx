@@ -102,7 +102,7 @@ export default function StudentShop() {
             <Grid item xs={12} sm={6} md={4} key={p.id}>
               <Card sx={{ borderRadius: 3, border: "1px solid #e5e7eb", elevation: 0 }}>
                 {p.image ? (
-                  <CardMedia component="img" height="180" image={`http://localhost:3000/uploads/${p.image}`} alt={p.name} sx={{ objectFit: "cover" }} />
+                  <CardMedia component="img" height="180" image={`https://seven-oy-crm-backned-1.onrender.com/files/files/${p.image}`} alt={p.name} sx={{ objectFit: "cover" }} />
                 ) : (
                   <Box sx={{ height: 180, bgcolor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <ShoppingBag sx={{ fontSize: 60, color: "#9ca3af" }} />
@@ -147,9 +147,22 @@ export default function StudentShop() {
                   <Typography sx={{ color: "#6b7280", fontSize: 12, mb: 2 }}>
                     Xarid qilingan sana: {new Date(p.created_at).toLocaleString("ru-RU")}
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <MonetizationOn sx={{ color: "#d97706", fontSize: 16 }} />
-                    <Typography sx={{ fontWeight: 700, color: "#92400e" }}>{p.price}</Typography>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <MonetizationOn sx={{ color: "#d97706", fontSize: 16 }} />
+                      <Typography sx={{ fontWeight: 700, color: "#92400e" }}>{p.price}</Typography>
+                    </Box>
+                    <Box>
+                      {p.status === "PENDING" && (
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-yellow-900 dark:text-yellow-300">Kutilmoqda</span>
+                      )}
+                      {p.status === "COMPLETED" && (
+                        <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-green-900 dark:text-green-300">Tasdiqlandi</span>
+                      )}
+                      {p.status === "CANCELLED" && (
+                        <span className="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-red-900 dark:text-red-300 font-medium">Rad etildi</span>
+                      )}
+                    </Box>
                   </Box>
                 </CardContent>
               </Card>

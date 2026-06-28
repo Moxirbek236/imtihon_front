@@ -153,7 +153,7 @@ export default function AdminTimetable() {
                       <div className="flex border-b bg-gray-50">
                         <div className="w-20 flex-shrink-0"></div>
                         <div className="flex-1 flex">
-                          {["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"].map((time, idx) => (
+                          {["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30"].map((time, idx) => (
                             <div key={idx} className="flex-1 px-1 py-2 text-[10px] text-gray-600 text-start border-l">
                               {time}
                             </div>
@@ -176,7 +176,7 @@ export default function AdminTimetable() {
                               
                               {/* Background grid lines */}
                               <div className="absolute inset-0 flex">
-                                {Array.from({ length: 15 }).map((_, i) => (
+                                {Array.from({ length: 14 }).map((_, i) => (
                                   <div key={i} className="flex-1 border-l"></div>
                                 ))}
                               </div>

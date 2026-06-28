@@ -12,6 +12,7 @@ import {
   BadgeOutlined,
   MonetizationOn,
   Send,
+  Business,
 } from "@mui/icons-material";
 
 const PANEL_WIDTH = 220;
@@ -76,34 +77,41 @@ export default function ManagementPanel({ open, onClose, sidebarCollapsed, onNav
         </Box>
 
         <List sx={{ px: 1, pt: 1 }}>
-          {menuItems.map((item) => (
-            <ListItemButton
-              key={item.label}
-              onClick={() => {
-                if (onNavigate) onNavigate(item.label);
-                onClose();
-              }}
-              sx={{
-                borderRadius: 2.5,
-                mb: 0.5,
-                px: 1.5,
-                "&:hover": {
-                  bgcolor: "#ede9fe",
-                  color: "#7c3aed",
-                  "& .MuiListItemIcon-root": { color: "#7c3aed" },
-                },
-                transition: "all 0.2s",
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36, color: "#6b7280" }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{ fontSize: 13.5, fontWeight: 500 }}
-              />
-            </ListItemButton>
-          ))}
+          {(() => {
+            const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+            const items = [...menuItems];
+            if (role === "SUPERADMIN" || role === "CREATOR") {
+              items.push({ label: "Filiallar", icon: <Business /> });
+            }
+            return items.map((item) => (
+              <ListItemButton
+                key={item.label}
+                onClick={() => {
+                  if (onNavigate) onNavigate(item.label);
+                  onClose();
+                }}
+                sx={{
+                  borderRadius: 2.5,
+                  mb: 0.5,
+                  px: 1.5,
+                  "&:hover": {
+                    bgcolor: "#ede9fe",
+                    color: "#7c3aed",
+                    "& .MuiListItemIcon-root": { color: "#7c3aed" },
+                  },
+                  transition: "all 0.2s",
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, color: "#6b7280" }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{ fontSize: 13.5, fontWeight: 500 }}
+                />
+              </ListItemButton>
+            ));
+          })()}
         </List>
       </Box>
     </>

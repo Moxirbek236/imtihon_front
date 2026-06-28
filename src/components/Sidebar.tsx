@@ -552,56 +552,62 @@ export default function Sidebar({ collapsed, onToggle, activeItem, onItemClick }
 
       {/* Nav Items */}
       <List sx={{ flex: 1, pt: 2, px: 1, overflowY: "auto", overflowX: "hidden" }}>
-        {navItems.map((item) => (
-          <Tooltip key={item.id} title={collapsed ? item.label : ""} placement="right" arrow>
-            <ListItemButton
-              selected={activeItem === item.id}
-              onClick={() => onItemClick(item.id)}
-              sx={{
-                borderRadius: 2.5,
-                mb: 0.5,
-                minHeight: 44,
-                px: 1.5,
-                "&.Mui-selected": {
-                  bgcolor: "#7c3aed",
-                  color: "white",
-                  "& .MuiListItemIcon-root": { color: "white" },
-                  "&:hover": { bgcolor: "#5b21b6" },
-                },
-                "&:hover:not(.Mui-selected)": {
-                  bgcolor: "#ede9fe",
-                  color: "#7c3aed",
-                  "& .MuiListItemIcon-root": { color: "#7c3aed" },
-                },
-                transition: "all 0.15s",
-              }}
-            >
-              <ListItemIcon
+        {(() => {
+          const visibleItems = [...navItems];
+          if (role === "CREATOR") {
+            visibleItems.splice(5, 0, { label: "Creator paneli", icon: <Layers />, id: "creator" });
+          }
+          return visibleItems.map((item) => (
+            <Tooltip key={item.id} title={collapsed ? item.label : ""} placement="right" arrow>
+              <ListItemButton
+                selected={activeItem === item.id}
+                onClick={() => onItemClick(item.id)}
                 sx={{
-                  minWidth: collapsed ? 0 : 36,
-                  color: activeItem === item.id ? "white" : "#6b7280",
-                  transition: "color 0.15s",
-                  mr: collapsed ? 0 : 0,
-                  justifyContent: "center",
+                  borderRadius: 2.5,
+                  mb: 0.5,
+                  minHeight: 44,
+                  px: 1.5,
+                  "&.Mui-selected": {
+                    bgcolor: "#7c3aed",
+                    color: "white",
+                    "& .MuiListItemIcon-root": { color: "white" },
+                    "&:hover": { bgcolor: "#5b21b6" },
+                  },
+                  "&:hover:not(.Mui-selected)": {
+                    bgcolor: "#ede9fe",
+                    color: "#7c3aed",
+                    "& .MuiListItemIcon-root": { color: "#7c3aed" },
+                  },
+                  transition: "all 0.15s",
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              <Collapse in={!collapsed} orientation="horizontal" timeout={300}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, overflow: "hidden" }}>
-                  <ListItemText
-                    primary={
-                      <Typography sx={{ fontSize: 14, fontWeight: activeItem === item.id ? 600 : 500, whiteSpace: "nowrap" }}>
-                        {item.label}
-                      </Typography>
-                    }
-                  />
-                  {(item as any).badge && (item as any).badge}
-                </Box>
-              </Collapse>
-            </ListItemButton>
-          </Tooltip>
-        ))}
+                <ListItemIcon
+                  sx={{
+                    minWidth: collapsed ? 0 : 36,
+                    color: activeItem === item.id ? "white" : "#6b7280",
+                    transition: "color 0.15s",
+                    mr: collapsed ? 0 : 0,
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <Collapse in={!collapsed} orientation="horizontal" timeout={300}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, overflow: "hidden" }}>
+                    <ListItemText
+                      primary={
+                        <Typography sx={{ fontSize: 14, fontWeight: activeItem === item.id ? 600 : 500, whiteSpace: "nowrap" }}>
+                          {item.label}
+                        </Typography>
+                      }
+                    />
+                    {(item as any).badge && (item as any).badge}
+                  </Box>
+                </Collapse>
+              </ListItemButton>
+            </Tooltip>
+          ));
+        })()}
       </List>
 
 

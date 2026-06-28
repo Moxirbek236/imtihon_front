@@ -33,7 +33,7 @@ export default function VideoUploadModal({ open, onClose, groupId, onSuccess }) 
     if (!open) return;
     async function fetchLessons() {
       try {
-        const res = await axiosClient.get(`/lessson?group_id=${groupId}`);
+        const res = await axiosClient.get(`/lessons?group_id=${groupId}`);
         const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
         setLessons(data);
       } catch (e) {

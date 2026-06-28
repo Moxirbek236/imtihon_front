@@ -51,7 +51,7 @@ export default function HomeworkCreate() {
   useEffect(() => {
     async function fetchLessons() {
       try {
-        const res = await axiosClient.get(`/lessson?group_id=${id}`);
+        const res = await axiosClient.get(`/lessons?group_id=${id}`);
         const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
         setLessons(data);
       } catch (error) {

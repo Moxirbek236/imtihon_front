@@ -94,6 +94,30 @@ export default function GiftsManagement() {
     }
   };
 
+  const handleConfirmPurchase = async (purchaseId: number) => {
+    try {
+      const res = await axiosClient.post(`/products/purchases/${purchaseId}/confirm`);
+      if (res.data?.success) {
+        toast.success("Xarid muvaffaqiyatli tasdiqlandi!");
+        fetchData();
+      }
+    } catch (error) {
+      toast.error("Xaridni tasdiqlashda xatolik yuz berdi");
+    }
+  };
+
+  const handleCancelPurchase = async (purchaseId: number) => {
+    try {
+      const res = await axiosClient.post(`/products/purchases/${purchaseId}/cancel`);
+      if (res.data?.success) {
+        toast.success("Xarid bekor qilindi va kumushlar qaytarildi!");
+        fetchData();
+      }
+    } catch (error) {
+      toast.error("Xaridni bekor qilishda xatolik yuz berdi");
+    }
+  };
+
   return (
     <Box sx={{ p: 3.5, width: "100%", boxSizing: "border-box" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -162,6 +186,8 @@ export default function GiftsManagement() {
                 <TableCell sx={{ fontWeight: 600 }}>Sovg'a</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Narxi</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Sana</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Holati</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: 220 }}>Amallar</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -174,11 +200,48 @@ export default function GiftsManagement() {
                   <TableCell>{p.product?.name}</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#d97706" }}>{p.price}</TableCell>
                   <TableCell>{new Date(p.created_at).toLocaleString("ru-RU")}</TableCell>
+                  <TableCell>
+                    {p.status === "PENDING" && (
+                      <span className="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-yellow-900 dark:text-yellow-300">Kutilmoqda</span>
+                    )}
+                    {p.status === "COMPLETED" && (
+                      <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-green-900 dark:text-green-300">Tasdiqlandi</span>
+                    )}
+                    {p.status === "CANCELLED" && (
+                      <span className="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-semibold dark:bg-red-900 dark:text-red-300 font-medium">Rad etildi</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {p.status === "PENDING" ? (
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Button
+                          variant="contained"
+                          color="success"
+                          size="small"
+                          onClick={() => handleConfirmPurchase(p.id)}
+                          sx={{ textTransform: "none", borderRadius: 2 }}
+                        >
+                          Tasdiqlash
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          onClick={() => handleCancelPurchase(p.id)}
+                          sx={{ textTransform: "none", borderRadius: 2 }}
+                        >
+                          Rad etish
+                        </Button>
+                      </Box>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {purchases.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 3 }}>Hozircha xaridlar yo'q</TableCell>
+                  <TableCell colSpan={6} align="center" sx={{ py: 3 }}>Hozircha xaridlar yo'q</TableCell>
                 </TableRow>
               )}
             </TableBody>

@@ -7,8 +7,8 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import axiosClient from "../../../../../../../api/axios";
 
-export default function HomeworkResultsPage() {
-  const { id, hwId } = useParams();
+export default function ExamResultsPage() {
+  const { id, examId } = useParams();
   const router = useRouter();
   
   const [data, setData] = useState<any>(null);
@@ -17,16 +17,16 @@ export default function HomeworkResultsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await axiosClient.get(`/home-works/${hwId}/submissions`);
+        const res = await axiosClient.get(`/exams/${examId}/submissions`);
         if (res.data?.success) {
-          setData(res.data.data);
+          setData(res.data);
         }
       } catch (err) {
         console.error("Error fetching submissions:", err);
       }
     }
     fetchData();
-  }, [hwId]);
+  }, [examId]);
 
   if (!data) return <Box sx={{ p: 3 }}>Yuklanmoqda...</Box>;
 
@@ -44,23 +44,20 @@ export default function HomeworkResultsPage() {
     }) + " " + d.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
   };
   
-  const getDeadline = (dateStr: string) => {
-    if (!dateStr) return "—";
-    const d = new Date(dateStr);
-    d.setHours(d.getHours() + 20); // Backend deadline logic example
-    return d.toLocaleDateString("uz-UZ", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }) + " " + d.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
-  };
+  const list = data.data || [];
+  const examInfo = data.exam || {};
+
+  const kutilayotganlar = list.filter((r: any) => r.examStatus === "PENDING");
+  const qaytarilganlar = list.filter((r: any) => r.examStatus === "RETURNED");
+  const qabulQilinganlar = list.filter((r: any) => r.examStatus === "ACCEPTED");
+  const bajarmaganlar = list.filter((r: any) => r.examStatus === "NOT_SUBMITTED");
 
   // Map tabs to arrays
   const tabsData = [
-    { label: `Kutayotganlar`, count: data.stats.pending, list: data.kutilayotganlar, type: 'pending' },
-    { label: `Qaytarilganlar`, count: data.stats.returned, list: data.qaytarilganlar, type: 'returned' },
-    { label: `Qabul qilinganlar`, count: data.stats.accepted, list: data.qabulQilinganlar, type: 'accepted' },
-    { label: `Bajarilmagan`, count: data.stats.notDone, list: data.bajarmaganlar, type: 'not_done' },
+    { label: `Kutayotganlar`, count: kutilayotganlar.length, list: kutilayotganlar, type: 'pending' },
+    { label: `Qaytarilganlar`, count: qaytarilganlar.length, list: qaytarilganlar, type: 'returned' },
+    { label: `Qabul qilinganlar`, count: qabulQilinganlar.length, list: qabulQilinganlar, type: 'accepted' },
+    { label: `Bajarilmagan`, count: bajarmaganlar.length, list: bajarmaganlar, type: 'not_done' },
   ];
 
   const currentTab = tabsData[tabValue];
@@ -71,7 +68,7 @@ export default function HomeworkResultsPage() {
       <Box sx={{ display: "flex", alignItems: "center", mb: 3, cursor: "pointer" }} onClick={() => router.push(`/dashboard/groups/${id}`)}>
         <ArrowBackIosNewIcon sx={{ fontSize: 14, color: "#6b7280", mr: 1 }} />
         <Typography sx={{ fontSize: 16, fontWeight: 600, color: "#374151" }}>
-          {data.homework.title}
+          {examInfo.title}
         </Typography>
       </Box>
 
@@ -79,25 +76,25 @@ export default function HomeworkResultsPage() {
         <Box sx={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e5e7eb", pb: 2 }}>
           <Box>
             <Typography sx={{ fontSize: 12, color: "#9ca3af", mb: 0.5 }}>Mavzu</Typography>
-            <Typography sx={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{data.homework.title}</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{examInfo.title}</Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 12, color: "#9ca3af", mb: 0.5 }}>Tugash vaqti</Typography>
+            <Typography sx={{ fontSize: 12, color: "#9ca3af", mb: 0.5 }}>Boshlanish vaqti</Typography>
             <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#4b5563" }}>
-              {getDeadline(data.homework.created_at)}
+              {formatDate(examInfo.start_date)}
             </Typography>
           </Box>
         </Box>
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 2 }}>
-          <Tabs value={tabValue} onChange={handleTabChange} TabIndicatorProps={{ style: { backgroundColor: "#10b981" } }}>
+          <Tabs value={tabValue} onChange={handleTabChange} TabIndicatorProps={{ style: { backgroundColor: "#7c3aed" } }}>
             {tabsData.map((tab, idx) => (
               <Tab
                 key={idx}
                 label={
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {tab.label}
-                    <Box sx={{ bgcolor: "#f59e0b", color: "white", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold" }}>
+                    <Box sx={{ bgcolor: "#7c3aed", color: "white", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold" }}>
                       {tab.count}
                     </Box>
                   </Box>
@@ -113,14 +110,12 @@ export default function HomeworkResultsPage() {
             <thead>
               <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
                 <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>O'quvchi ismi</th>
-                {currentTab.type === 'pending' && <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Uyga vazifa jo'natilgan vaqt</th>}
+                {currentTab.type === 'pending' && <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Imtihon jo'natilgan vaqt</th>}
                 {currentTab.type === 'accepted' || currentTab.type === 'returned' ? (
                   <>
                     <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Topshirilgan vaqti</th>
                     <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Tekshirilgan vaqti</th>
                     <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Ball</th>
-                    <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>XP</th>
-                    <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Kumush</th>
                     <th style={{ padding: "16px", color: "#6b7280", fontSize: "13px", fontWeight: 500 }}>Harakatlar</th>
                   </>
                 ) : null}
@@ -133,21 +128,19 @@ export default function HomeworkResultsPage() {
                   style={{ borderBottom: "1px solid #f3f4f6", cursor: currentTab.type !== 'not_done' ? "pointer" : "default" }}
                   onClick={() => {
                     if (currentTab.type !== 'not_done') {
-                      router.push(`/dashboard/groups/${id}/homework/${hwId}/student/${row.student.id}/review?status=${tabValue}`);
+                      router.push(`/dashboard/groups/${id}/exam/${examId}/student/${row.student_id}/review?status=${tabValue}`);
                     }
                   }}
                 >
-                  <td style={{ padding: "16px", fontSize: "14px", color: "#111827", fontWeight: 500 }}>{row.student.full_name}</td>
+                  <td style={{ padding: "16px", fontSize: "14px", color: "#111827", fontWeight: 500 }}>{row.students?.full_name}</td>
                   {currentTab.type === 'pending' && (
-                    <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.submitted_at)}</td>
+                    <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.created_at)}</td>
                   )}
                   {(currentTab.type === 'accepted' || currentTab.type === 'returned') && (
                     <>
-                      <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.submitted_at)}</td>
-                      <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.result?.created_at)}</td>
-                      <td style={{ padding: "16px", fontSize: "14px", color: "#f59e0b", fontWeight: "bold" }}>⚡ {row.result?.grade || 0}</td>
-                      <td style={{ padding: "16px", fontSize: "14px", color: "#8b5cf6" }}>🔮 {row.result?.xp || 0}</td>
-                      <td style={{ padding: "16px", fontSize: "14px", color: "#9ca3af" }}>🪙 {row.result?.coin || 0}</td>
+                      <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.created_at)}</td>
+                      <td style={{ padding: "16px", fontSize: "14px", color: "#4b5563" }}>{formatDate(row.checked_at)}</td>
+                      <td style={{ padding: "16px", fontSize: "14px", color: "#7c3aed", fontWeight: "bold" }}>⚡ {row.score || 0}</td>
                       <td style={{ padding: "16px" }}>
                         <EditOutlinedIcon sx={{ color: "#9ca3af", fontSize: 20 }} />
                       </td>

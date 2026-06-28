@@ -68,7 +68,7 @@ export default function StudentGroupLessons({ id: groupId }) {
 
   const handleRowClick = async (lesson: any) => {
     if (lesson.isExam) {
-      setToastMessage("Bu imtihon darsi");
+      router.push(`/dashboard/my-groups/${groupId}/exams/${lesson.id}`);
       return;
     }
     

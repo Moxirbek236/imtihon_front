@@ -182,7 +182,7 @@ export default function GroupLesson() {
 
     async function fetchTopics() {
       try {
-        const res = await axiosClient.get(`/lessson?group_id=${id}`);
+        const res = await axiosClient.get(`/lessons?group_id=${id}`);
         if (Array.isArray(res?.data)) {
            const uniqueTopics = Array.from(new Set(res.data.map((l: any) => l.topic).filter(Boolean)));
            setTopics(uniqueTopics as string[]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, CircularProgress, TextField, IconButton, Collapse } from "@mui/material";
+import { Box, Typography, CircularProgress, TextField, IconButton, Collapse, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosClient from "../api/axios";
@@ -14,6 +14,36 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 
 const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
+
+const getFileList = (attachments: any) => {
+  if (!attachments) return [];
+  if (Array.isArray(attachments)) {
+    const list: string[] = [];
+    attachments.forEach((att: any) => {
+      if (typeof att === "string" && att.trim().startsWith("[")) {
+        try {
+          list.push(...JSON.parse(att));
+        } catch {
+          list.push(att);
+        }
+      } else {
+        list.push(att);
+      }
+    });
+    return list;
+  }
+  if (typeof attachments === "string") {
+    if (attachments.trim().startsWith("[")) {
+      try {
+        return JSON.parse(attachments);
+      } catch {
+        return [attachments];
+      }
+    }
+    return [attachments];
+  }
+  return [];
+};
 
 export default function StudentLessonInner({ groupId, lessonId }: { groupId: string; lessonId: string }) {
   const router = useRouter();
@@ -157,9 +187,14 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
             </Box>
           )}
           <Box sx={{ p: 2 }}>
-            <Typography sx={{ fontSize: 16, fontWeight: 500, color: "#374151" }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 600, color: "#374151", mb: 1 }}>
               {lesson?.name} {currentVideo && `(${currentVideo.originalname || "video"})`}
             </Typography>
+            {lesson?.description && (
+              <Typography sx={{ fontSize: 14, color: "#4b5563", whiteSpace: "pre-line", mt: 1 }}>
+                {lesson.description}
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -186,6 +221,21 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
                   </Box>
                 </Box>
                 <div style={{ fontSize: "14px", color: "#4b5563", lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: homeworkInfo.desc }} />
+                {getFileList(homeworkInfo.attachments).length > 0 && (
+                  <Box sx={{ mt: 2, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+                    {getFileList(homeworkInfo.attachments).map((file: string, idx: number) => (
+                      <Button
+                        key={idx}
+                        variant="outlined"
+                        size="small"
+                        onClick={() => window.open(`${BASE_URL}${file}`, "_blank")}
+                        sx={{ textTransform: "none", borderRadius: 1.5, borderColor: "#d97706", color: "#d97706", "&:hover": { borderColor: "#b45309", bgcolor: "#fffbeb" } }}
+                      >
+                        Faylni yuklab olish ({idx + 1})
+                      </Button>
+                    ))}
+                  </Box>
+                )}
               </Box>
 
               {/* Input if not yet submitted */}
@@ -201,6 +251,21 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
                     <Typography sx={{ fontSize: 13, color: "#4b5563" }}>Fayllar soni: {sub.attachments?.length || 0}</Typography>
                   </Box>
                   <Typography sx={{ fontSize: 14, color: "#4b5563", mb: 2, whiteSpace: "pre-line" }}>{sub.message}</Typography>
+                  {getFileList(sub.attachments).length > 0 && (
+                    <Box sx={{ mt: 2, mb: 2, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+                      {getFileList(sub.attachments).map((file: string, idx: number) => (
+                        <Button
+                          key={idx}
+                          variant="outlined"
+                          size="small"
+                          onClick={() => window.open(`${BASE_URL}${file}`, "_blank")}
+                          sx={{ textTransform: "none", borderRadius: 1.5, borderColor: "#3b82f6", color: "#3b82f6", "&:hover": { borderColor: "#2563eb", bgcolor: "#eff6ff" } }}
+                        >
+                          Faylni ko'rish ({idx + 1})
+                        </Button>
+                      ))}
+                    </Box>
+                  )}
                   <Typography sx={{ fontSize: 13, color: "#4b5563", textAlign: "right" }}>{formatDateTime(sub.createdAt)}</Typography>
                 </Box>
               ))}

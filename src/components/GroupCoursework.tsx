@@ -426,7 +426,17 @@ export default function GroupCoursework() {
                   <tr><td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#6b7280" }}>Imtihonlar mavjud emas</td></tr>
                 ) : (
                   examsData.map((exam: any, idx: number) => (
-                    <tr key={exam.id || idx} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                    <tr
+                      key={exam.id || idx}
+                      onClick={() => router.push(`/dashboard/groups/${id}/exam/${exam.id}/results`)}
+                      style={{
+                        borderBottom: "1px solid #f3f4f6",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#f9fafb"}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
                       <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563" }}>{idx + 1}</td>
                       <td style={{ padding: "16px", fontSize: "13px", fontWeight: 500, color: "#111827" }}>{exam.title}</td>
                       <td style={{ padding: "16px", fontSize: "13px", color: "#4b5563" }}>
@@ -444,13 +454,14 @@ export default function GroupCoursework() {
                           {exam.is_published ? 'Elon qilingan' : 'Kutilmoqda'}
                         </span>
                       </td>
-                      <td style={{ padding: "16px", textAlign: "center" }}>
+                      <td style={{ padding: "16px", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
                         {!exam.is_published && (
                           <Button 
                             variant="outlined" 
                             size="small" 
                             sx={{ textTransform: "none" }}
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               try {
                                 await axiosClient.post(`/exams/${exam.id}/publish`);
                                 queryClient.invalidateQueries({ queryKey: ["exams", id] });

@@ -143,6 +143,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       router.push("/dashboard/rating");
     } else if (label === "Hodimlar" || label === "Xodimlar") {
       router.push("/management/teachers");
+    } else if (label === "Filiallar") {
+      router.push("/management/branches");
+    } else if (label === "Xabar Yuborish") {
+      router.push("/management/messages");
     } else {
       router.push("/management");
     }
