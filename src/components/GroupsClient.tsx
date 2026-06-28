@@ -233,14 +233,16 @@ export default function GroupsClient({ initialGroups, initialPagination, statusF
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const nextQuery = new URLSearchParams({
-        page: String(page),
-        search: searchQuery,
-        status: currentStatus,
-      }).toString();
+      const params: any = {};
+      if (page !== 1) params.page = String(page);
+      if (searchQuery) params.search = searchQuery;
+      if (currentStatus !== "all") params.status = currentStatus;
+
+      const nextQuery = new URLSearchParams(params).toString();
 
       if (urlSearchParams.toString() !== nextQuery) {
-        router.replace(`?${nextQuery}`);
+        if (!nextQuery && !urlSearchParams.toString()) return;
+        router.replace(nextQuery ? `?${nextQuery}` : window.location.pathname);
       }
     }, 300);
     return () => clearTimeout(timer);

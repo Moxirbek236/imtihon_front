@@ -3,13 +3,12 @@
 import { Box, Typography, Tabs, Tab, Avatar, CircularProgress, Dialog, DialogContent } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import axiosClient from "../api/axios";
 
 export default function StudentMyGroups() {
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const [tabValue, setTabValue] = useState(searchParams?.get("status") === "finished" ? 1 : 0);
-  const [activeGroups, setActiveGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [teachersModalOpen, setTeachersModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
@@ -24,26 +23,16 @@ export default function StudentMyGroups() {
     router.replace(`?status=${newValue === 1 ? 'finished' : 'active'}`);
   };
 
-  useEffect(() => {
-    const fetchMyGroups = async () => {
-      try {
-        setLoading(true);
-        const res = await axiosClient.get("/students/my/groups");
-        if (res.data.success) {
-          setActiveGroups(res.data.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch student groups:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMyGroups();
-  }, []);
+  const { data: response, isLoading: loading } = useQuery({
+    queryKey: ["student-groups", tabValue === 1 ? 'finished' : 'active'],
+    queryFn: async () => {
+      const res = await axiosClient.get(`/students/my/groups?status=${tabValue === 1 ? 'finished' : 'active'}`);
+      return res.data;
+    },
+    staleTime: 60000,
+  });
 
-  const finishedGroups = [];
-
-  const displayedGroups = tabValue === 0 ? activeGroups : finishedGroups;
+  const displayedGroups = response?.data || [];
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
