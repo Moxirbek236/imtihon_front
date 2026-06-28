@@ -77,7 +77,12 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
   useEffect(() => {
     async function fetchStudents() {
       try {
-        const res = await axiosClient.get(`/students/all?page=${page}&limit=10&search=${searchQuery}`);
+        const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+        const endpoint = role === "TEACHER"
+          ? `/teachers/group/students?page=${page}&limit=10&search=${searchQuery}`
+          : `/students/all?page=${page}&limit=10&search=${searchQuery}`;
+          
+        const res = await axiosClient.get(endpoint);
         if (res.data?.success) {
           setStudents(res.data.data || []);
           setTotalPages(res.data.pagination?.totalPages || 1);
@@ -88,6 +93,9 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
     }
     async function fetchBranches() {
       try {
+        const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+        if (role === "TEACHER") return; // O'qituvchi filiallarni ko'ra olmaydi
+        
         const res = await axiosClient.get(`/branches`);
         if (res.data?.success) setAllBranches(res.data.data);
       } catch (err) {

@@ -222,10 +222,7 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
                 </Box>
               ))}
 
-              {/* Resubmit after return */}
-              {canSubmit && isSubmitted && (
-                <SubmissionInput comment={comment} setComment={setComment} selectedFiles={selectedFiles} handleFileChange={handleFileChange} handleRemoveFile={handleRemoveFile} handleSubmit={handleSubmit} submitting={submitting} />
-              )}
+              {/* Resubmit after return block removed as per user request (only 1 submission allowed) */}
 
               {/* Accepted final message */}
               {isGraded && teacherScore >= 60 && (

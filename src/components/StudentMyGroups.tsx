@@ -129,14 +129,9 @@ export default function StudentMyGroups() {
             ) : (
               <>
                 {displayedGroups.map((group, index) => (
-                  <Box
+                  <Card
                     key={group.id}
-                    component="a"
-                    href={`/dashboard/my-groups/${group.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      router.push(`/dashboard/my-groups/${group.id}`);
-                    }}
+                    onClick={() => router.push(`/dashboard/my-groups/${group.id}`)}
                     sx={{
                       display: "grid",
                       gridTemplateColumns: "60px 2fr 2fr 1fr 1fr",
@@ -162,7 +157,7 @@ export default function StudentMyGroups() {
                         : "-"}
                     </Typography>
                     <Typography sx={{ fontSize: 13, color: "#111827" }}>{formatDate(group.start_date)}</Typography>
-                  </Box>
+                  </Card>
                 ))}
 
                 {displayedGroups.length === 0 && (

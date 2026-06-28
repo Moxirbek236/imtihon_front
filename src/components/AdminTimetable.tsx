@@ -75,8 +75,8 @@ export default function AdminTimetable() {
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
-      <div className="min-h-auto bg-gray-50 dark:bg-background">
-        <div className="mx-auto bg-white dark:bg-card rounded-lg shadow-sm p-3">
+      <div className="min-h-auto bg-gray-50">
+        <div className="mx-auto bg-white rounded-lg shadow-sm p-3">
           <div data-slot="accordion" className="w-full" data-orientation="vertical">
             <div data-state={isOpen ? "open" : "closed"} data-orientation="vertical" data-slot="accordion-item">
               <h3 data-orientation="vertical" data-state={isOpen ? "open" : "closed"} className="flex">
@@ -90,7 +90,7 @@ export default function AdminTimetable() {
                   className="focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md text-left text-sm font-medium transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180 w-full px-3"
                 >
                   <div className="flex items-center gap-3">
-                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">Dars jadvali</h1>
+                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800">Dars jadvali</h1>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down text-muted-foreground pointer-events-none size-6 mr-5 translate-y-0.5 shrink-0 transition-transform duration-200" aria-hidden="true">
                     <path d="m6 9 6 6 6-6"></path>
@@ -112,22 +112,22 @@ export default function AdminTimetable() {
                   <div className="p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
                       <div className="text-center rounded-[8px] shadow-sm min-w-[45px] sm:min-w-[50px]">
-                        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800 px-2 sm:px-3 py-1">{currentMonthName}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-500 uppercase bg-gray-50 px-2 sm:px-3 py-1">{currentMonthName}</div>
                         <div className="text-base sm:text-[18px] font-bold text-indigo-600">{currentDay}</div>
                       </div>
                       <div>
-                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{currentMonthName} {currentYear}</div>
-                        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{currentWeekDay}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">{currentMonthName} {currentYear}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-500">{currentWeekDay}</div>
                       </div>
                     </div>
                     
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                      <div className="flex bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
+                      <div className="flex bg-gray-100 rounded-lg p-1">
                         {["Toq kunlar", "Juft kunlar", "Boshqalar"].map((f) => (
                           <button 
                             key={f}
                             onClick={() => setDayFilter(f)}
-                            className={`flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${dayFilter === f ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm" : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"}`}
+                            className={`flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${dayFilter === f ? "bg-white text-[#7c3aed] shadow-sm" : "text-gray-600 hover:text-gray-800"}`}
                           >
                             {f}
                           </button>
@@ -136,9 +136,9 @@ export default function AdminTimetable() {
                     </div>
                   </div>
 
-                  <div className="p-3 border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Tanlangan kun turi: <span className="font-medium text-indigo-600">{dayFilter}</span>
+                  <div className="p-3 border-b bg-gray-50">
+                    <div className="text-sm text-gray-600">
+                      Tanlangan kun turi: <span className="font-medium text-[#7c3aed]">{dayFilter}</span>
                     </div>
                   </div>
 
@@ -146,11 +146,11 @@ export default function AdminTimetable() {
                     <div className="inline-block min-w-full">
                       
                       {/* Timeline Header */}
-                      <div className="flex border-b dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
+                      <div className="flex border-b bg-gray-50">
                         <div className="w-20 flex-shrink-0"></div>
                         <div className="flex-1 flex">
                           {["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"].map((time, idx) => (
-                            <div key={idx} className="flex-1 px-1 py-2 text-[10px] text-gray-600 dark:text-gray-300 text-start border-l dark:border-gray-800">
+                            <div key={idx} className="flex-1 px-1 py-2 text-[10px] text-gray-600 text-start border-l">
                               {time}
                             </div>
                           ))}
@@ -164,16 +164,16 @@ export default function AdminTimetable() {
                         <div className="p-6 text-center text-gray-500">Ushbu kunga darslar topilmadi</div>
                       ) : (
                         uniqueRooms.map((room: any) => (
-                          <div key={room.id} className="flex border-b dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors relative" style={{ minHeight: "60px" }}>
-                            <div className="w-20 flex-shrink-0 px-3 py-3 border-r dark:border-gray-800 bg-gray-50 dark:bg-slate-900">
-                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300">{room.name}</div>
+                          <div key={room.id} className="flex border-b hover:bg-gray-100 transition-colors relative" style={{ minHeight: "60px" }}>
+                            <div className="w-20 flex-shrink-0 px-3 py-3 border-r bg-gray-50">
+                              <div className="text-xs font-medium text-gray-700">{room.name}</div>
                             </div>
                             <div className="flex-1 relative overflow-x-auto">
                               
                               {/* Background grid lines */}
                               <div className="absolute inset-0 flex">
                                 {Array.from({ length: 15 }).map((_, i) => (
-                                  <div key={i} className="flex-1 border-l dark:border-gray-800"></div>
+                                  <div key={i} className="flex-1 border-l"></div>
                                 ))}
                               </div>
                               
@@ -186,8 +186,8 @@ export default function AdminTimetable() {
                                     return (
                                       <a key={g.id} href={`/dashboard/groups/${g.id}`}>
                                         <div 
-                                          className="absolute rounded-md p-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-transform hover:scale-[1.01]" 
-                                          style={{ ...styles, opacity: 0.95, backgroundColor: g.color || "#026AA2" }}
+                                          className="absolute rounded-md p-2 border border-gray-200 shadow-sm transition-transform hover:scale-[1.01]" 
+                                          style={{ ...styles, opacity: 0.95, backgroundColor: g.color || "#7c3aed" }}
                                         >
                                           <div className="flex items-start justify-between h-full">
                                             <div className="flex-1 min-w-0">

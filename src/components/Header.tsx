@@ -87,8 +87,8 @@ export default function Header({ darkMode, onToggleTheme }) {
               startIcon={<Add />}
               endIcon={<ExpandMore />}
               sx={{
-                bgcolor: "#d97706",
-                "&:hover": { bgcolor: "#b45309" },
+                bgcolor: "#7c3aed",
+                "&:hover": { bgcolor: "#5b21b6" },
                 textTransform: "none",
                 fontWeight: 600,
                 borderRadius: 2,
