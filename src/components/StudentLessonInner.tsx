@@ -30,29 +30,50 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await axiosClient.get(`/students/my/group/${groupId}/lesson/${lessonId}`);
-        setData(res.data?.data);
+  const [groupVideos, setGroupVideos] = useState<any[]>([]);
 
+  useEffect(() => {
+    // Faqat 1 marta (yoki groupId o'zgarganda) group ma'lumotlarini olamiz
+    const fetchGroupData = async () => {
+      try {
         const vidRes = await axiosClient.get(`/videos/group/${groupId}`);
-        const vids = vidRes.data?.data?.filter((v: any) => v.lesson_id === Number(lessonId)) || [];
-        setVideos(vids);
-        if (vids.length > 0) setCurrentVideo(vids[0]);
+        setGroupVideos(vidRes.data?.data || []);
 
         const slRes = await axiosClient.get(`/students/my/group/${groupId}/lessons-lite`);
         const slData = Array.isArray(slRes.data) ? slRes.data : slRes.data?.data || [];
         setSidebarLessons(slData);
+      } catch (err) {
+        console.error("Group ma'lumotlarini olishda xatolik:", err);
+      }
+    };
+    fetchGroupData();
+  }, [groupId]);
+
+  useEffect(() => {
+    // Har gal lessonId o'zgarganda dars ma'lumotini yuklaymiz
+    const fetchLessonData = async () => {
+      try {
+        setLoading(true);
+        const res = await axiosClient.get(`/students/my/group/${groupId}/lesson/${lessonId}`);
+        setData(res.data?.data);
       } catch (err) {
         console.error("Xatolik:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchLessonData();
   }, [groupId, lessonId]);
+
+  useEffect(() => {
+    // Joriy dars o'zgarganda, avtomat birinchi videoni qo'yamiz
+    if (groupVideos.length > 0) {
+      const vids = groupVideos.filter((v: any) => v.lesson_id === Number(lessonId));
+      setCurrentVideo(vids.length > 0 ? vids[0] : null);
+    } else {
+      setCurrentVideo(null);
+    }
+  }, [groupVideos, lessonId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setSelectedFiles(Array.from(e.target.files));
@@ -229,6 +250,7 @@ export default function StudentLessonInner({ groupId, lessonId }: { groupId: str
             currentVideo={currentVideo}
             setCurrentVideo={setCurrentVideo}
             router={router}
+            groupVideos={groupVideos}
           />
         ))}
       </Box>
@@ -272,27 +294,15 @@ function SubmissionInput({ comment, setComment, selectedFiles, handleFileChange,
   );
 }
 
-function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrentVideo, router }: any) {
+function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrentVideo, router, groupVideos }: any) {
   const [expanded, setExpanded] = useState(isActive);
-  const [videos, setVideos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const videos = groupVideos?.filter((v: any) => v.lesson_id === lesson.id) || [];
 
   useEffect(() => {
     if (isActive) {
       setExpanded(true);
     }
   }, [isActive]);
-
-  useEffect(() => {
-    if (expanded && lesson.hasVideo && videos.length === 0) {
-      setLoading(true);
-      axiosClient.get(`/videos?lessonId=${lesson.id}`)
-        .then((res) => {
-          setVideos(res.data?.data || []);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [expanded, lesson.hasVideo, lesson.id]);
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent navigation
@@ -330,46 +340,40 @@ function SidebarLessonItem({ lesson, isActive, groupId, currentVideo, setCurrent
       </Box>
 
       <Collapse in={expanded}>
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-            <CircularProgress size={20} sx={{ color: "#d97706" }} />
-          </Box>
-        ) : (
-          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-            {videos.map((vid, idx) => {
-              const isSelected = currentVideo?.id === vid.id;
-              return (
-                <Box
-                  key={vid.id}
-                  onClick={() => setCurrentVideo(vid)}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    bgcolor: isSelected ? "#fcd34d" : "#fef3c7",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    transition: "0.2s",
-                    "&:hover": { bgcolor: "#fcd34d" }
-                  }}
-                >
-                  {isSelected ? (
-                    <RadioButtonCheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
-                  ) : (
-                    <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
-                  )}
-                  <Typography sx={{ fontSize: 13, color: "#4b5563" }}>
-                    {idx + 1}-video: {vid.originalname || vid.video_url}
-                  </Typography>
-                </Box>
-              );
-            })}
-            {videos.length === 0 && lesson.hasVideo && (
-              <Typography sx={{ fontSize: 12, color: "#9ca3af", ml: 2, mt: 1 }}>Videolar topilmadi</Typography>
-            )}
-          </Box>
-        )}
+        <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+          {videos.map((vid: any, idx: number) => {
+            const isSelected = currentVideo?.id === vid.id;
+            return (
+              <Box
+                key={vid.id}
+                onClick={() => setCurrentVideo(vid)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: isSelected ? "#fcd34d" : "#fef3c7",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  transition: "0.2s",
+                  "&:hover": { bgcolor: "#fcd34d" }
+                }}
+              >
+                {isSelected ? (
+                  <RadioButtonCheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
+                ) : (
+                  <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "#d97706" }} />
+                )}
+                <Typography sx={{ fontSize: 13, color: "#4b5563" }}>
+                  {idx + 1}-video: {vid.originalname || vid.video_url}
+                </Typography>
+              </Box>
+            );
+          })}
+          {videos.length === 0 && lesson.hasVideo && (
+            <Typography sx={{ fontSize: 12, color: "#9ca3af", ml: 2, mt: 1 }}>Videolar topilmadi</Typography>
+          )}
+        </Box>
       </Collapse>
     </Box>
   );

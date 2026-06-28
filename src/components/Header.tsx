@@ -73,28 +73,32 @@ export default function Header({ darkMode, onToggleTheme }) {
     >
       <Toolbar sx={{ gap: 1.5, minHeight: "56px !important", px: 2 }}>
         {/* Calendar + Add */}
-        <Tooltip title="Kalendar">
-          <IconButton size="small" sx={{ color: "#6b7280" }}>
-            <CalendarToday fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {role !== "STUDENT" && (
+          <>
+            <Tooltip title="Kalendar">
+              <IconButton size="small" sx={{ color: "#6b7280" }}>
+                <CalendarToday fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<Add />}
-          endIcon={<ExpandMore />}
-          sx={{
-            bgcolor: "#7c3aed",
-            "&:hover": { bgcolor: "#5b21b6" },
-            textTransform: "none",
-            fontWeight: 600,
-            borderRadius: 2,
-            px: 1.5,
-          }}
-        >
-          Qo'shish
-        </Button>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<Add />}
+              endIcon={<ExpandMore />}
+              sx={{
+                bgcolor: "#d97706",
+                "&:hover": { bgcolor: "#b45309" },
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                px: 1.5,
+              }}
+            >
+              Qo'shish
+            </Button>
+          </>
+        )}
 
         {/* Search */}
         <Box
@@ -150,7 +154,7 @@ export default function Header({ darkMode, onToggleTheme }) {
             sx={{
               width: 34,
               height: 34,
-              bgcolor: "#7c3aed",
+              bgcolor: "#d97706",
               fontSize: 14,
               cursor: "pointer",
               transition: "opacity 0.2s",
@@ -198,12 +202,12 @@ export default function Header({ darkMode, onToggleTheme }) {
         >
           {/* User info */}
           <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Avatar sx={{ width: 36, height: 36, bgcolor: "#ede9fe", color: "#7c3aed", fontSize: 15, fontWeight: 700 }}>
+            <Avatar sx={{ width: 36, height: 36, bgcolor: "#fef3c7", color: "#d97706", fontSize: 15, fontWeight: 700 }}>
               {avatarLetter}
             </Avatar>
             <Box>
               <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>
-                {role}
+                {role === "STUDENT" ? "O'quvchi" : role === "TEACHER" ? "O'qituvchi" : "Admin"}
               </Typography>
             </Box>
           </Box>

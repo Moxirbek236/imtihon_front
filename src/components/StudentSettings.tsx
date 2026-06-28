@@ -131,7 +131,7 @@ export default function StudentSettings() {
                   variant="contained" 
                   onClick={handleSave} 
                   disabled={saving}
-                  sx={{ bgcolor: "#7c3aed", px: 4, "&:hover": { bgcolor: "#6d28d9" } }}
+                  sx={{ bgcolor: "#d97706", px: 4, "&:hover": { bgcolor: "#b45309" }, borderRadius: 2, textTransform: "none", fontWeight: 600 }}
                 >
                   {saving ? "Saqlanmoqda..." : "Saqlash"}
                 </Button>

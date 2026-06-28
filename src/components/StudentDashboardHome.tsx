@@ -54,20 +54,20 @@ export default function StudentDashboardHome() {
           <Card
             elevation={0}
             sx={{
+              bgcolor: "white",
               border: "1px solid #e5e7eb",
               borderRadius: 3,
-              background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
             }}
           >
             <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ color: "#d97706", fontSize: 40 }}>
-                <MonetizationOn fontSize="inherit" />
+              <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", color: "#d97706" }}>
+                <MonetizationOn sx={{ fontSize: 28 }} />
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 14, color: "#92400e", fontWeight: 600 }}>
+                <Typography sx={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>
                   Kumushlar (Coins)
                 </Typography>
-                <Typography sx={{ fontSize: 28, fontWeight: 800, color: "#92400e" }}>
+                <Typography sx={{ fontSize: 24, fontWeight: 800, color: "#111827" }}>
                   {data.coins}
                 </Typography>
               </Box>
@@ -79,20 +79,20 @@ export default function StudentDashboardHome() {
           <Card
             elevation={0}
             sx={{
+              bgcolor: "white",
               border: "1px solid #e5e7eb",
               borderRadius: 3,
-              background: "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)",
             }}
           >
             <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ color: "#4f46e5", fontSize: 40 }}>
-                <Stars fontSize="inherit" />
+              <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", color: "#4b5563" }}>
+                <Stars sx={{ fontSize: 28 }} />
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 14, color: "#3730a3", fontWeight: 600 }}>
+                <Typography sx={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>
                   Umumiy XP
                 </Typography>
-                <Typography sx={{ fontSize: 28, fontWeight: 800, color: "#3730a3" }}>
+                <Typography sx={{ fontSize: 24, fontWeight: 800, color: "#111827" }}>
                   {data.xp}
                 </Typography>
               </Box>
@@ -104,21 +104,21 @@ export default function StudentDashboardHome() {
           <Card
             elevation={0}
             sx={{
+              bgcolor: "white",
               border: "1px solid #e5e7eb",
               borderRadius: 3,
-              background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
             }}
           >
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                <Box sx={{ color: "#16a34a", fontSize: 40 }}>
-                  <EmojiEvents fontSize="inherit" />
+                <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", color: "#10b981" }}>
+                  <EmojiEvents sx={{ fontSize: 24 }} />
                 </Box>
                 <Box>
-                  <Typography sx={{ fontSize: 14, color: "#166534", fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>
                     Bosqich {data.level}
                   </Typography>
-                  <Typography sx={{ fontSize: 12, color: "#15803d" }}>
+                  <Typography sx={{ fontSize: 12, color: "#10b981", fontWeight: 500 }}>
                     Keyingi bosqichga {100 - data.progress} XP qoldi
                   </Typography>
                 </Box>
@@ -127,10 +127,10 @@ export default function StudentDashboardHome() {
                 variant="determinate" 
                 value={data.progress} 
                 sx={{ 
-                  height: 8, 
-                  borderRadius: 4,
-                  bgcolor: "rgba(255,255,255,0.5)",
-                  "& .MuiLinearProgress-bar": { bgcolor: "#16a34a" }
+                  height: 6, 
+                  borderRadius: 3,
+                  bgcolor: "#e5e7eb",
+                  "& .MuiLinearProgress-bar": { bgcolor: "#10b981" }
                 }} 
               />
             </CardContent>

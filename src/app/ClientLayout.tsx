@@ -7,6 +7,8 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import ManagementPanel from "../components/ManagementPanel";
 
+import axiosClient from "../api/axios";
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
@@ -20,6 +22,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     pathname.startsWith("/login") ||
     pathname.startsWith("/forgot-password") ||
     pathname === "/";
+
+  useEffect(() => {
+    // Backendni "uyg'oq" ushlab turish uchun har 1 daqiqada ping
+    const interval = setInterval(() => {
+      axiosClient.get("/health").catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setMounted(true);

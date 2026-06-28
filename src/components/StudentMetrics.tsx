@@ -53,8 +53,9 @@ export default function StudentMetrics() {
         elevation={0}
         sx={{
           mb: 4,
-          background: "linear-gradient(to right, #0f2c59, #1a4b8c)",
-          color: "white",
+          bgcolor: "white",
+          border: "1px solid #e5e7eb",
+          color: "#111827",
           borderRadius: 3,
         }}
       >
@@ -64,19 +65,19 @@ export default function StudentMetrics() {
               width: 80,
               height: 80,
               borderRadius: "50%",
-              bgcolor: "rgba(255,255,255,0.1)",
+              bgcolor: "#fef3c7",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <EmojiEvents sx={{ fontSize: 40, color: "#fde047" }} />
+            <EmojiEvents sx={{ fontSize: 40, color: "#d97706" }} />
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 16, opacity: 0.9 }}>Jami yig'ilgan XP</Typography>
-            <Typography sx={{ fontSize: 36, fontWeight: 800 }}>{data.totalXP}</Typography>
-            <Typography sx={{ fontSize: 14, opacity: 0.8, mt: 0.5 }}>
-              Bosqich {data.level}
+            <Typography sx={{ fontSize: 14, color: "#6b7280", fontWeight: 600 }}>Jami yig'ilgan XP</Typography>
+            <Typography sx={{ fontSize: 36, fontWeight: 800, color: "#d97706" }}>{data.totalXP}</Typography>
+            <Typography sx={{ fontSize: 13, color: "#9ca3af", mt: 0.5 }}>
+              Siz hozirda {data.level}-bosqichdasiz
             </Typography>
           </Box>
         </CardContent>
