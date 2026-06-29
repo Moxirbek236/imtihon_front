@@ -97,7 +97,7 @@ export default function GroupCoursework() {
       if (confirm(`Haqiqatan ham ushbu videoni o'chirmoqchimisiz?\n${selectedVideo.originalname || selectedVideo.video_url}`)) {
         try {
           await axiosClient.delete(`/videos/${selectedVideo.id}`);
-          queryClient.invalidateQueries({ queryKey: ["lessonVideos"] });
+          queryClient.invalidateQueries({ queryKey: ["groupVideos", id] });
         } catch (error) {
           console.error("Xatolik:", error);
         }
@@ -663,7 +663,7 @@ export default function GroupCoursework() {
         onSuccess={() => {
           setUploadModalOpen(false);
           // @ts-ignore
-          queryClient.invalidateQueries({ queryKey: ["lesson_videos", id] });
+          queryClient.invalidateQueries({ queryKey: ["groupVideos", id] });
         }}
       />
 
