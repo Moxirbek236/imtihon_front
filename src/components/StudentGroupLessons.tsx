@@ -24,7 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
-const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
+const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/file/";
 
 export default function StudentGroupLessons({ id: groupId }) {
   const router = useRouter();

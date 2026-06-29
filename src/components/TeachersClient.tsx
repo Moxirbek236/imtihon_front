@@ -369,7 +369,7 @@ export default function TeachersClient({ initialTeachers, initialPagination, sea
             {/* Name + Avatar */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Avatar
-                src={teacher.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/${teacher.photo}` : undefined}
+                src={teacher.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${teacher.photo}` : undefined}
                 sx={{
                   width: 32,
                   height: 32,

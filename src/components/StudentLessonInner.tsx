@@ -13,7 +13,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 
-const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
+const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/file/";
 
 const getFileList = (attachments: any) => {
   if (!attachments) return [];

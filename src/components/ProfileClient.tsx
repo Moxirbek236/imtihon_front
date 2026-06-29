@@ -101,7 +101,7 @@ export default function ProfileClient({ initialProfile }) {
             />
             <CardContent sx={{ pt: 0, textAlign: "center", pb: 4 }}>
               <Avatar
-                src={profile.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/${profile.photo}` : undefined}
+                src={profile.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${profile.photo}` : undefined}
                 sx={{
                   width: 100,
                   height: 100,

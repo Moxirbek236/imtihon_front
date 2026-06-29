@@ -171,7 +171,7 @@ export default function AdminRating() {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar src={row.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/files/${row.photo}` : ""} sx={{ width: 32, height: 32 }} />
+                      <Avatar src={row.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${row.photo}` : ""} sx={{ width: 32, height: 32 }} />
                       <Typography sx={{ fontWeight: 500, fontSize: 14 }}>{row.full_name}</Typography>
                     </Box>
                   </TableCell>

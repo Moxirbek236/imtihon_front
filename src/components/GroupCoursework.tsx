@@ -516,7 +516,7 @@ export default function GroupCoursework() {
               controls
               autoPlay
               style={{ width: "100%", height: "100%", maxHeight: "520px", display: "block" }}
-              src={`https://seven-oy-crm-backned-1.onrender.com/files/files/${selectedFile.video_url}`}
+              src={`https://seven-oy-crm-backned-1.onrender.com/file/${selectedFile.video_url}`}
             >
               Brauzeringiz video formatini qo'llab-quvvatlamaydi.
             </video>

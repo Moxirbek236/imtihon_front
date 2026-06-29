@@ -158,7 +158,7 @@ export default function GiftsManagement() {
                 <TableRow key={p.id}>
                   <TableCell>
                     {p.image ? (
-                      <Box component="img" src={`https://seven-oy-crm-backned-1.onrender.com/files/files/${p.image}`} sx={{ width: 40, height: 40, objectFit: "cover", borderRadius: 1 }} />
+                      <Box component="img" src={`https://seven-oy-crm-backned-1.onrender.com/file/${p.image}`} sx={{ width: 40, height: 40, objectFit: "cover", borderRadius: 1 }} />
                     ) : (
                       <Box sx={{ width: 40, height: 40, bgcolor: "#e5e7eb", borderRadius: 1 }} />
                     )}

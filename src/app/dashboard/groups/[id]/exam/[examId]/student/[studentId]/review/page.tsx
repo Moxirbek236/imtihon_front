@@ -6,7 +6,7 @@ import { Box, Typography, Button, Paper, Slider, TextField, Alert, CircularProgr
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import axiosClient from "../../../../../../../../../api/axios";
 
-const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
+const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/file/";
 
 export default function ExamReviewPage() {
   const { id, examId, studentId } = useParams();

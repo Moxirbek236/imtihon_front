@@ -11,7 +11,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/files/files/";
+const BASE_URL = "https://seven-oy-crm-backned-1.onrender.com/file/";
 
 export default function StudentExamInner({ groupId, examId }: { groupId: string; examId: string }) {
   const router = useRouter();

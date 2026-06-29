@@ -369,7 +369,7 @@ export default function StudentsClient({ initialStudents, initialPagination, sea
                 sx={{ p: 0, "&.Mui-checked": { color: "#7c3aed" } }}
               />
               <Avatar
-                src={student.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/${student.photo}` : undefined}
+                src={student.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${student.photo}` : undefined}
                 sx={{ width: 32, height: 32, bgcolor: "#ede9fe", color: "#7c3aed", fontSize: 13, fontWeight: 700 }}
               >
                 {student.full_name?.charAt(0) || "Q"}

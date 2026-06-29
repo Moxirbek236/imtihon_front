@@ -102,7 +102,7 @@ export default function StudentShop() {
             <Grid item xs={12} sm={6} md={4} key={p.id}>
               <Card sx={{ borderRadius: 3, border: "1px solid #e5e7eb", elevation: 0 }}>
                 {p.image ? (
-                  <CardMedia component="img" height="180" image={`https://seven-oy-crm-backned-1.onrender.com/files/files/${p.image}`} alt={p.name} sx={{ objectFit: "cover" }} />
+                  <CardMedia component="img" height="180" image={`https://seven-oy-crm-backned-1.onrender.com/file/${p.image}`} alt={p.name} sx={{ objectFit: "cover" }} />
                 ) : (
                   <Box sx={{ height: 180, bgcolor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <ShoppingBag sx={{ fontSize: 60, color: "#9ca3af" }} />

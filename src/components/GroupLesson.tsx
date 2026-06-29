@@ -451,7 +451,7 @@ export default function GroupLesson() {
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                       <Avatar
-                        src={row.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/${row.photo}` : ""}
+                        src={row.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${row.photo}` : ""}
                         sx={{ width: 32, height: 32, fontSize: 13 }}
                       >
                         {row.full_name?.charAt(0)}

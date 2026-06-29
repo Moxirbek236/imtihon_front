@@ -261,7 +261,7 @@ export default function GroupInner({ id }) {
                 {oneGroup?.teachers?.map((teacher, index) => (
                   <Box key={teacher.id || index} sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <Avatar 
-                      src={teacher.photo ? `https://seven-oy-crm-backned-1.onrender.com/files/${teacher.photo}` : ""} 
+                      src={teacher.photo ? `https://seven-oy-crm-backned-1.onrender.com/file/${teacher.photo}` : ""} 
                       sx={{ width: 56, height: 56, bgcolor: "#f0fdf4", color: "#22c55e", mb: 1, border: "2px solid #e5e7eb" }}
                     >
                       {teacher.full_name?.charAt(0)}
